@@ -1,2 +1,2 @@
 # SMS-Classification
-SNPs Marker Selector for classification.
+SNPs Markers Selector (SMS) for classification.
