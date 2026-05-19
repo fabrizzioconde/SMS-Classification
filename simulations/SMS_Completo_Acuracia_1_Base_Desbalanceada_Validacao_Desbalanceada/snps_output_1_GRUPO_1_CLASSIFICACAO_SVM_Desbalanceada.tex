@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{array}
+\begin{document}
+\begin{table}[h]
+\caption{SVM com kernels Linear e Radial para base de dados 1 desbalanceada.}
+\label{tab:sms_cls}
+\begin{tabular}{c|c|c|c|c|c}
+\hline
+\textbf{Método} & \textbf{Kernel} & \textbf{$\gamma$} & \textbf{\begin{tabular}[c]{@{}c@{}}\emph{SNPs} selecionados\end{tabular}} & \textbf{\# \emph{SNPs} (V)} & \textbf{\begin{tabular}[c]{@{}c@{}}Acurácia\\média (\%)\end{tabular}} \\
+\hline
+SNPs causais & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{6}, \textbf{7}, \textbf{8}\end{tabular} & - & - \\
+\hline
+SMS & Linear & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{6}, \textbf{7}, \textbf{8}, 9, 10\\11, 13, 14, 16, 17\\20, 22, 24, 28, 31\\33, 35, 36, 43, 47\\49, 50, 52, 53, 54\\55, 56, 59, 60, 63\\65, 66, 67, 68, 69\\71, 72, 73, 75, 76\\77, 84, 87, 88, 89\\92, 94, 97\end{tabular} & 53(8) & 80.50 \\
+\hline
+SMS & Radial & 0.001 & \begin{tabular}[c]{@{}c@{}}\textbf{3}, \textbf{5}, 24, 36, 43\\50, 59, 60, 65, 76\\92\end{tabular} & 11(2) & 80.00 \\
+\hline
+SMS & Radial & 0.01 & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{6}, \textbf{7}, \textbf{8}, 9, 10\\11, 14, 16, 17, 20\\22, 24, 25, 26, 28\\31, 32, 33, 35, 36\\39, 43, 44, 47, 49\\50, 52, 53, 54, 55\\56, 58, 59, 60, 63\\65, 66, 68, 69, 71\\72, 73, 75, 76, 77\\82, 83, 84, 85, 86\\87, 92, 94, 99, 100\end{tabular} & 60(8) & 80.10 \\
+\hline
+SMS & Radial & 0.1 & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{7}\\\textbf{8}, 11, 20, 24, 50\end{tabular} & 10(6) & 87.40 \\
+\hline
+SMS & Radial & 1.0 & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{5}, \textbf{7}, \textbf{8}\\20, 24, 71\end{tabular} & 8(5) & 84.60 \\
+\hline
+União & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{6}, \textbf{7}, \textbf{8}, 9, 10\\11, 13, 14, 16, 17\\20, 22, 24, 25, 26\\28, 31, 32, 33, 35\\36, 39, 43, 44, 47\\49, 50, 52, 53, 54\\55, 56, 58, 59, 60\\63, 65, 66, 67, 68\\69, 71, 72, 73, 75\\76, 77, 82, 83, 84\\85, 86, 87, 88, 89\\92, 94, 97, 99, 100\end{tabular} & 65(8) & - \\
+\hline
+Interseção & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{5}, 24\end{tabular} & 2(1) & - \\
+\hline
+Valor-p bruto & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{7}, \textbf{8}, 27, 28, 42\\89\end{tabular} & 11(7) & - \\
+\hline
+Valor-p corrigido & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{4}, \textbf{7}, \textbf{8}\end{tabular} & 5(5) & - \\
+\hline
+\end{tabular}
+\end{table}
+\end{document}

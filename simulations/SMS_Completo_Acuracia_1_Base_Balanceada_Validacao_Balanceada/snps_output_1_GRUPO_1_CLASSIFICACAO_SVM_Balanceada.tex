@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{array}
+\begin{document}
+\begin{table}[h]
+\caption{SVM com kernels Linear e Radial para base de dados 1 balanceada.}
+\label{tab:sms_cls}
+\begin{tabular}{c|c|c|c|c|c}
+\hline
+\textbf{Método} & \textbf{Kernel} & \textbf{$\gamma$} & \textbf{\begin{tabular}[c]{@{}c@{}}\emph{SNPs} selecionados\end{tabular}} & \textbf{\# \emph{SNPs} (V)} & \textbf{\begin{tabular}[c]{@{}c@{}}Acurácia\\média (\%)\end{tabular}} \\
+\hline
+SNPs causais & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{6}, \textbf{7}, \textbf{8}\end{tabular} & - & - \\
+\hline
+SMS & Linear & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{6}\\\textbf{7}, \textbf{8}, 36, 59, 89\end{tabular} & 10(7) & 72.10 \\
+\hline
+SMS & Radial & 0.001 & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{7}\\\textbf{8}, 11, 12, 16, 17\\20, 27, 29, 48, 53\\54, 58, 61, 63, 69\\73, 86, 88, 91, 93\\99\end{tabular} & 26(6) & 71.50 \\
+\hline
+SMS & Radial & 0.01 & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{7}, \textbf{8}, 29, 59\end{tabular} & 9(7) & 74.20 \\
+\hline
+SMS & Radial & 0.1 & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{6}, \textbf{7}, \textbf{8}, 12, 27\\28, 33\end{tabular} & 12(8) & 83.80 \\
+\hline
+SMS & Radial & 1.0 & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{7}\\\textbf{8}, 28, 71, 89\end{tabular} & 9(6) & 78.50 \\
+\hline
+União & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{6}, \textbf{7}, \textbf{8}, 11, 12\\16, 17, 20, 27, 28\\29, 33, 36, 48, 53\\54, 58, 59, 61, 63\\69, 71, 73, 86, 88\\89, 91, 93, 99\end{tabular} & 34(8) & - \\
+\hline
+Interseção & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{4}, \textbf{7}, \textbf{8}\end{tabular} & 5(5) & - \\
+\hline
+Valor-p bruto & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5}\\\textbf{7}, \textbf{8}, 10, 12, 30\\33, 54, 71\end{tabular} & 13(7) & - \\
+\hline
+Valor-p corrigido & - & - & \begin{tabular}[c]{@{}c@{}}\textbf{1}, \textbf{4}, \textbf{7}, \textbf{8}, 12\end{tabular} & 5(4) & - \\
+\hline
+\end{tabular}
+\end{table}
+\end{document}

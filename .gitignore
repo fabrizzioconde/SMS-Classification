@@ -1,0 +1,69 @@
+# =============================================================================
+# SMS-Classification — .gitignore
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# LaTeX build artifacts
+# ---------------------------------------------------------------------------
+*.aux
+*.bbl
+*.blg
+*.lof
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.nav
+*.snm
+*.vrb
+*.bak
+*.bak.tex
+
+# Compiled LaTeX output (tracked via git-lfs or excluded intentionally)
+report/Relatorio_Completo_SMS_TCC.pdf
+report/Relatorio_temp.pdf
+report/output_tmp.pdf
+report/*.bak.tex
+
+# Temporary LaTeX files
+output_tmp.*
+Relatorio_temp.*
+
+# ---------------------------------------------------------------------------
+# R artifacts
+# ---------------------------------------------------------------------------
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+*.RData
+
+# ---------------------------------------------------------------------------
+# Large binary / reference files (use Git LFS or external storage)
+# ---------------------------------------------------------------------------
+references/
+*.zip
+
+# Large PDFs in root (duplicates; originals in report/ or docs/)
+fabrizziocondedeoliveira*.pdf
+Relatorio_Completo_SMS_TCC.pdf
+Tabelas___TCC_II.pdf
+
+# ---------------------------------------------------------------------------
+# System files
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+nul
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/

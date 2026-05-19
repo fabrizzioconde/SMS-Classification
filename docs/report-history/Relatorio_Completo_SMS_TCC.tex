@@ -1,0 +1,2012 @@
+% ============================================================
+%  Relatório Completo de Resultados – SMS Classificação de SNPs
+%  TCC – Izabela
+% ============================================================
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=2cm}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage[hidelinks]{hyperref}
+\usepackage{caption}
+% makecell emulado sem pacote externo
+\newcommand{\makecell}[2][t]{\begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
+\usepackage{setspace}
+\usepackage{parskip}
+
+% ---- Cores e comando \novo -----------------------------------
+\definecolor{corNova}{RGB}{0,100,140}
+\newcommand{\novo}[1]{\textcolor{corNova}{#1}}
+
+% ---- Tipos de colunas personalizados -------------------------
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.3}
+
+% ---- Espaçamento de parágrafos ------------------------------
+\setlength{\parskip}{6pt}
+
+\begin{document}
+
+% ---- Título -------------------------------------------------
+\begin{center}
+  {\LARGE\bfseries Relatório Completo de Resultados}\\[0.4em]
+  {\large SMS --- Classificação e Seleção de SNPs}\\[0.3em]
+  {\large TCC --- Izabela}\\[0.5em]
+  \today
+\end{center}
+
+\noindent\rule{\textwidth}{0.6pt}
+\vspace{0.3em}
+
+% ---- Legenda de cores ---------------------------------------
+\begin{center}
+\begin{tabular}{@{}lp{13cm}@{}}
+  \textbf{Legenda de Cores:} & \\[2pt]
+  \textcolor{black}{\rule{1.2cm}{5pt}} &
+    Texto preto: conteúdo original extraído do arquivo
+    \textit{Tabelas\_\_\_TCC\_II.pdf} \\[4pt]
+  \textcolor{corNova}{\rule{1.2cm}{5pt}} &
+    \novo{Texto azul-petróleo: conteúdo inserido neste relatório
+    (novos experimentos com SMOTE-NC, análises comparativas e conclusões).} \\
+\end{tabular}
+\end{center}
+
+\noindent\rule{\textwidth}{0.6pt}
+\vspace{0.5em}
+
+% ---- Parágrafo introdutório (original) ----------------------
+As tabelas evidenciam os dados obtidos a partir da primeira simulação, realizada com apenas oito efeitos aditivos, sendo SNP1, SNP2, SNP3, SNP4, SNP5, SNP6, SNP7 e SNP8 utilizados nessa simulação como SNPs informativos para a geração do fenótipo. Considerando os resultados apresentados nas tabelas, observa-se que os métodos baseados em Support Vector Machines (SVM) apresentaram desempenhos distintos a depender do kernel e do valor do parâmetro $\gamma$.
+
+% =============================================================
+\section*{\novo{Material e Métodos}}
+% =============================================================
+
+\subsection*{\novo{Geração das Bases de Dados Simuladas}}
+
+\novo{As bases de dados foram geradas por meio do modelo linear generalizado para SNPs implementado na função \texttt{simulateSNPglm} do pacote \texttt{scrime} do R. O modelo gera simultaneamente uma matriz de genótipos e um preditor linear, a partir do qual se define o fenótipo binário (caso/controle). Em ambas as bases, o fenótipo $Y_i$ do indivíduo $i$ é definido pela regra de limiar:}
+\[
+  \novo{Y_i = \mathbf{1}[\eta_i > 0], \qquad
+  \eta_i = \beta_0 + \sum_{g=1}^{G} \beta_g \cdot f_g\!\left(\mathbf{x}_i^{(g)}\right) + \varepsilon_i,
+  \quad \varepsilon_i \overset{\text{i.i.d.}}{\sim} N(0,1)}
+\]
+\novo{onde $\eta_i$ é o preditor linear, $\beta_0$ é o intercepto (calibrado numericamente para atingir a proporção de casos desejada), $G$ é o número de grupos causais, $\beta_g$ é o efeito do grupo $g$, $f_g(\mathbf{x}_i^{(g)})$ é a função de codificação genotípica do grupo $g$ para o indivíduo $i$, e $\varepsilon_i$ é o erro aleatório gaussiano. Para cada SNP $j$ não pertencente a nenhum grupo causal, seu efeito é nulo ($\beta = 0$). O genótipo $x_{ij} \in \{1, 2, 3\}$ é codificado pelo pacote \texttt{scrime} segundo a convenção: $x_{ij} = 1$ indica homozigoto para o alelo maior (AA, zero cópias do alelo menor), $x_{ij} = 2$ indica heterozigoto (Aa, uma cópia) e $x_{ij} = 3$ indica homozigoto para o alelo menor (aa, duas cópias).}
+
+\novo{A função $f_g$ codifica o efeito de cada grupo segundo o modelo genético especificado pelo parâmetro \texttt{list.ia} do \texttt{scrime}. Com a codificação $x \in \{1, 2, 3\}$, os códigos têm os seguintes efeitos sobre o preditor linear:}
+\begin{itemize}
+  \item \novo{$+1$ (aditivo): $f(x) = x - 1 \in \{0, 1, 2\}$ --- efeito proporcional ao número de cópias do alelo menor.}
+  \item \novo{$+2$ (dominante): $f(x) = \mathbf{1}[x \geq 2] \in \{0, 1\}$ --- efeito presente sempre que ao menos uma cópia do alelo menor existe (Aa ou aa).}
+  \item \novo{$+3$ (recessivo): $f(x) = \mathbf{1}[x = 3] \in \{0, 1\}$ --- efeito presente apenas no homozigoto menor (aa).}
+  \item \novo{$-1$ (reverso aditivo): $f(x) = 3 - x \in \{0, 1, 2\}$ --- efeito decrescente com o número de cópias do alelo menor.}
+  \item \novo{$-2$ (reverso dominante): $f(x) = \mathbf{1}[x = 1] \in \{0, 1\}$ --- efeito presente apenas no homozigoto maior (AA).}
+  \item \novo{$-3$ (reverso recessivo): $f(x) = \mathbf{1}[x \leq 2] \in \{0, 1\}$ --- efeito presente quando não há homozigotia para o alelo menor.}
+\end{itemize}
+\novo{Para grupos com múltiplos SNPs, a função $f_g$ é o produto das codificações individuais de cada SNP do grupo, modelando interações epistáticas entre os marcadores.}
+
+\novo{A frequência do alelo menor (MAF) de cada SNP foi sorteada uniformemente no intervalo $[0{,}1;\; 0{,}4]$. Os SNPs não causais foram gerados sem qualquer associação com o fenótipo.}
+
+\subsubsection*{\novo{Base de Dados 1 --- Oito Efeitos Independentes}}
+
+\novo{A Base 1 foi simulada com $G = 8$ grupos causais, cada um contendo exatamente um SNP causal (efeitos marginais independentes, sem interação entre eles). O preditor linear é:}
+\[
+  \novo{\eta_i = \beta_0 + 2\,g_1(x_{i1}) + 2\,g_2(x_{i2}) + 2\,g_3(x_{i3}) + 2\,g_{-1}(x_{i4})
+         + 2\,g_{-2}(x_{i5}) + 2\,g_{-3}(x_{i6}) + 2\,g_1(x_{i7}) + 2\,g_2(x_{i8}) + \varepsilon_i}
+\]
+\novo{onde os subíndices de $g$ indicam o modelo genético: $g_1$ (aditivo), $g_2$ (dominante), $g_3$ (recessivo), $g_{-1}$ (reverso aditivo), $g_{-2}$ (reverso dominante), $g_{-3}$ (reverso recessivo). Todos os coeficientes $\beta_g = 2$. Os SNPs causais são SNP\,1 a SNP\,8; os demais 92 SNPs não têm efeito sobre o fenótipo.}
+
+\subsubsection*{\novo{Base de Dados 2 --- Cinco Grupos com Efeitos Epistáticos}}
+
+\novo{A Base 2 foi simulada com $G = 5$ grupos causais, contendo ao todo 8 SNPs causais agrupados por padrão de interação epistática. O preditor linear é:}
+\[
+  \novo{\eta_i = \beta_0
+         + 2\,g_1(x_{i1})
+         + 2\,g_3(x_{i2})
+         + 2\,g_2(x_{i3})
+         + 3\,g_{-1,3}(x_{i4}, x_{i5})
+         + 4\,g_{1,2,3}(x_{i6}, x_{i7}, x_{i8})
+         + \varepsilon_i}
+\]
+\novo{onde $g_{-1,3}(x_{i4}, x_{i5}) = g_{-1}(x_{i4}) \cdot g_3(x_{i5})$ representa a interação epistática entre SNP\,4 (reverso aditivo) e SNP\,5 (recessivo), e $g_{1,2,3}(x_{i6}, x_{i7}, x_{i8}) = g_1(x_{i6}) \cdot g_2(x_{i7}) \cdot g_3(x_{i8})$ representa a interação epistática tripla entre SNP\,6 (aditivo), SNP\,7 (dominante) e SNP\,8 (recessivo). Os coeficientes $\beta_g$ são 2, 2, 2, 3 e 4 para os grupos 1 a 5, respectivamente, refletindo efeitos crescentes para os grupos epistáticos.}
+
+\subsection*{\novo{Pipeline do Método SMS}}
+
+\novo{O método SMS (\textit{Sequential Multi-Step for SNP selection}) é executado em três etapas sequenciais para cada kernel SVM:}
+\begin{enumerate}
+  \item \novo{\textbf{Ranking por Floresta Aleatória (RF):} treina-se uma RF com \texttt{ntree} = 4000 árvores sobre o conjunto completo de SNPs e ordena-se os marcadores pela importância média (\textit{Mean Decrease in Gini}), do mais ao menos relevante.}
+  \item \novo{\textbf{Etapa de Corte do SVM (\textit{Cutting Step}):} o SVM é treinado e avaliado iterativamente: a cada iteração, o SNP de menor rank é removido e o desempenho (acurácia ou F1 Score, conforme o experimento) é registrado. O subconjunto de SNPs que maximiza essa métrica é retido para a próxima etapa.}
+  \item \novo{\textbf{Refinamento por Algoritmo Genético (GA):} sobre o subconjunto retido, o GA busca o subconjunto ótimo de SNPs que maximiza o fitness do SVM (acurácia ou F1 Score). A aptidão é avaliada por validação (hold-out ou $k$-fold estratificado, conforme o experimento). O resultado final de cada kernel é o subconjunto identificado pelo GA.}
+\end{enumerate}
+
+\novo{Os resultados de todos os kernels são então combinados por três métodos: \textbf{União} (SNPs selecionados por ao menos um kernel), \textbf{Interseção} (SNPs selecionados por todos os kernels) e \textbf{Valor-$p$} (regressão logística univariada para cada SNP, sem e com correção por múltiplos testes por Bonferroni).}
+
+\subsection*{\novo{Parâmetros e Configurações das Análises}}
+
+\novo{A Tabela~\ref{tab:params} resume todos os parâmetros e configurações utilizados nos dez experimentos realizados.}
+
+\begin{table}[ht]
+\centering
+\caption{\novo{Parâmetros e configurações de todas as análises realizadas.}}
+\label{tab:params}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{L{3.8cm}|C{1.0cm}|C{1.0cm}|C{1.1cm}|C{1.6cm}|C{1.5cm}|C{1.4cm}|C{1.4cm}}
+\hline
+\textbf{Experimento} & \textbf{Base} & \textbf{Casos} & \textbf{Contr.} & \textbf{Validação} & \textbf{Balanc.} & \textbf{Métrica Corte} & \textbf{Fitness GA} \\
+\hline
+Bal.\ $\times$ Val.\ Bal. & 1 & 500 & 500 & Hold-out bal. & --- & Acurácia & Acurácia \\
+\hline
+Bal.\ $\times$ Val.\ Desbal. & 1 & 500 & 500 & Hold-out desbal. & --- & Acurácia & Acurácia \\
+\hline
+Desbal.\ $\times$ Val.\ Bal. & 1 & 200 & 800 & Hold-out bal. & --- & Acurácia & Acurácia \\
+\hline
+Desbal.\ $\times$ Val.\ Desbal. & 1 & 200 & 800 & Hold-out desbal. & --- & Acurácia & Acurácia \\
+\hline
+Desbal.\ + SMOTE (Ac.) & 1 & 200 & 800 & $k$-fold estrat.\ $k=10$ & SMOTE-NC & Acurácia & Acurácia \\
+\hline
+Desbal.\ + SMOTE (F1) & 1 & 200 & 800 & $k$-fold estrat.\ $k=10$ & SMOTE-NC & F1 Score & F1 Score \\
+\hline
+Bal.\ $\times$ Val.\ Bal. & 2 & 500 & 500 & Hold-out bal. & --- & Acurácia & Acurácia \\
+\hline
+Bal.\ $\times$ Val.\ Desbal. & 2 & 500 & 500 & Hold-out desbal. & --- & Acurácia & Acurácia \\
+\hline
+Desbal.\ + SMOTE (Ac.) & 2 & 200 & 800 & $k$-fold estrat.\ $k=10$ & SMOTE-NC & Acurácia & Acurácia \\
+\hline
+Desbal.\ + SMOTE (F1) & 2 & 200 & 800 & $k$-fold estrat.\ $k=10$ & SMOTE-NC & F1 Score & F1 Score \\
+\hline
+\multicolumn{8}{l}{\textit{Parâmetros comuns a todos os experimentos:}} \\
+\multicolumn{8}{l}{SNPs totais = 100 \quad SNPs causais = 8 \quad MAF $\sim U[0{,}1;\,0{,}4]$ \quad RF: ntree = 4000} \\
+\multicolumn{8}{l}{SVM: $C = 1{,}0$ \quad Kernels: Linear; RBF $\gamma \in \{0{,}001;\,0{,}01;\,0{,}1;\,1{,}0\}$} \\
+\multicolumn{8}{l}{GA: popSize = 100 \quad maxiter = 10 \quad $p_{\text{cross}} = 0{,}8$ \quad $p_{\text{mut}} = 0{,}1$} \\
+\hline
+\end{tabular}
+\end{table}
+\renewcommand{\arraystretch}{1.3}
+
+% =============================================================
+
+% =============================================================
+\section*{\novo{Métricas de Avaliação dos SNPs: Precisão, Sensibilidade e F1}}
+% =============================================================
+
+\novo{Neste relatório são apresentadas duas métricas complementares para avaliar os métodos de seleção de SNPs. Cada uma actua em um nível de análise distinto, e sua interpretação conjunta é fundamental para uma avaliação adequada dos resultados.}
+
+\begin{description}
+  \item[\novo{\textbf{Acurácia das Observações} (\textit{Ac.\ Obs.\ \%}):}]
+  \novo{Mede o desempenho do SVM na classificação correta dos \textbf{indivíduos} (amostras) em seus respectivos grupos fenotípicos (caso/controle). É calculada como a proporção de indivíduos corretamente classificados durante a validação (cruzada ou simples). Essa métrica avalia o \emph{poder preditivo} do modelo sobre as observações. Nas tabelas dos experimentos sem SMOTE, corresponde à acurácia sobre o conjunto de validação. Nas tabelas dos experimentos com SMOTE-NC, corresponde ao valor de \textit{fitness} otimizado pelo Algoritmo Genético com validação cruzada estratificada de 10 \textit{folds}. \textbf{Limitação importante:} em bases desbalanceadas (ex.: 80\%/20\%), um classificador trivial que preveja sempre a classe majoritária atingiria 80\% de acurácia sem qualquer poder discriminativo real. Por isso, a acurácia das observações sozinha é uma métrica inadequada para dados desbalanceados.}
+
+  \item[\novo{\textbf{Precisão das Variáveis} (\textit{Prec.\ \%}):}]
+  \novo{Mede a \textbf{precisão biológica} da seleção de SNPs, ou seja, qual proporção dos SNPs selecionados pelo método são realmente causais (verdadeiros positivos). É calculada como:}
+  \[
+    \novo{\text{Ac.\ Var.} = \frac{\text{N.º de SNPs causais selecionados}}{\text{N.º total de SNPs selecionados}} \times 100\%}
+  \]
+  \novo{Essa métrica equivale ao \textbf{Valor Preditivo Positivo} (VPP ou \textit{Precision}) na seleção de variáveis. Um valor de 100\% indica que \emph{todos} os SNPs selecionados são causais (sem falsos positivos), enquanto valores baixos indicam que o conjunto selecionado é dominado por SNPs irrelevantes. Diferentemente da acurácia das observações, a acurácia das variáveis é independente do desbalanceamento de classes, avaliando diretamente a qualidade da seleção de marcadores genéticos.}
+
+  \item[\novo{\textbf{Sensibilidade das Variáveis} (\textit{Sens.\ \%}):}]
+  \novo{Mede a proporção dos SNPs causais verdadeiros que foram efetivamente recuperados pelo método (também chamada de \textit{Recall} ou Revocação). É calculada como:}
+  \[
+    \novo{\text{Sens.} = \frac{\text{N.º de SNPs causais selecionados}}{\text{Total de SNPs causais}} \times 100\%}
+  \]
+  \novo{Uma sensibilidade de 100\% significa que \emph{todos} os causais foram identificados. Métodos excessivamente conservadores (ex.: Interseção, Valor-$p$ corrigido) podem ter alta precisão mas baixa sensibilidade, perdendo marcadores biologicamente relevantes.}
+
+  \item[\novo{\textbf{F1 das Variáveis} (\textit{F1\ Var.\ \%}):}]
+  \novo{Combina Precisão e Sensibilidade numa única medida pela média harmônica:}
+  \[
+    \novo{\text{F1\ Var.} = \frac{2 \cdot \text{Prec.} \cdot \text{Sens.}}{\text{Prec.} + \text{Sens.}} \times 100\%}
+  \]
+  \novo{Substituindo $\text{Prec.} = V/T$ e $\text{Sens.} = V/C$, onde $C$ é o total de SNPs causais verdadeiros (conhecido apenas em simulação), $V$ é o número de SNPs causais selecionados e $T$ é o total de SNPs selecionados, obtém-se a \textbf{forma fechada geral}:}
+  \[
+    \novo{\text{F1\ Var.} = \frac{2\,\dfrac{V}{T}\cdot\dfrac{V}{C}}{\dfrac{V}{T}+\dfrac{V}{C}} = \frac{2V}{T + C} \times 100\%}
+  \]
+  \novo{O fator $V$ cancela algebricamente no numerador e denominador, revelando que o F1 Var.\ depende unicamente de $V$ (causais recuperados), $T$ (total selecionados) e $C$ (total de causais existentes). Note que os Verdadeiros Negativos (SNPs não-causais corretamente excluídos) \emph{não influenciam} o F1 — isso é intencional: a métrica foca exclusivamente no desempenho sobre os SNPs de interesse (causais).}
+
+  \novo{\textbf{Casos particulares:} a fórmula atinge 100\% somente quando $V = C$ (todos os causais recuperados) e $T = C$ (nenhum não-causal incluído), pois $2C/(C+C) = 1$. Quanto maior $T$ em relação a $V$, mais falsos positivos existem e o F1 decresce; quanto menor $V$ em relação a $C$, mais causais foram perdidos (falsos negativos) e o F1 também decresce.}
+
+  \novo{\textbf{Aplicação neste estudo:} com $C = 8$ SNPs causais nas simulações realizadas, a fórmula simplifica-se para:}
+  \[
+    \novo{\text{F1\ Var.} = \frac{2V}{T + 8} \times 100\%}
+  \]
+  \novo{Esta expressão é específica do presente cenário de simulação. Em estudos com diferente número de causais, o denominador muda conforme $C$. Em dados reais, $C$ é desconhecido e a fórmula torna-se incalculável — o que reforça o papel central dos estudos de simulação para validação de métodos de seleção de SNPs.}
+
+  \novo{\textbf{Nota sobre os resultados:} Valor-$p$ corrigido e Interseção frequentemente obtêm alta precisão (100\%) mas baixa sensibilidade, perdendo causais. Isso pode resultar em F1 Var.\ semelhante ou inferior ao SMS Radial $\gamma = 0{,}1$, que equilibra melhor as duas componentes.}
+
+\end{description}
+
+\novo{A análise conjunta das três métricas de variáveis (Prec., Sens. e F1 Var.) permite identificar o melhor compromisso (\textit{trade-off}) entre pureza biológica e cobertura dos SNPs causais; já a Ac.\ Obs.\ avalia o desempenho preditivo nos indivíduos. Em geral, métodos mais inclusivos (ex.: SMS Linear, Radial $\gamma = 0{,}001$) tendem a apresentar alta acurácia das observações mas baixa acurácia das variáveis (muitos falsos positivos), enquanto métodos mais restritivos (ex.: Interseção, Valor-$p$ corrigido) tendem a apresentar alta acurácia das variáveis mas menor cobertura dos SNPs causais. O equilíbrio ideal é aquele que maximiza o F1 Var. (harmônica de Prec. e Sens.) simultaneamente à Ac.\ Obs., indicando métodos que recuperam SNPs causais com precisão e abrangência, sem sacrificar o desempenho preditivo.}
+
+% =============================================================
+\subsection*{\novo{Analogia entre as Métricas de Observações e de Variáveis}}
+% =============================================================
+
+\novo{As métricas de avaliação das variáveis (SNPs) são \textbf{matematicamente idênticas} às métricas clássicas de avaliação de classificadores, diferindo apenas no \emph{universo} e na definição de ``positivo''. A tabela a seguir torna essa correspondência explícita:}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{L{3.2cm}|L{4.8cm}|L{4.8cm}}
+  \textbf{Conceito} & \textbf{Observações (indivíduos)} & \textbf{Variáveis (SNPs)} \\
+  \hline
+  Unidade analisada & Indivíduo & SNP \\
+  \hline
+  Classe positiva & Caso (doente) & SNP causal \\
+  \hline
+  Classe negativa & Controle (sadio) & SNP não-causal \\
+  \hline
+  Verdadeiro Positivo (TP) & Caso classificado como caso & SNP causal selecionado \\
+  \hline
+  Falso Positivo (FP) & Controle classificado como caso & SNP não-causal selecionado \\
+  \hline
+  Falso Negativo (FN) & Caso classificado como controle & SNP causal não selecionado \\
+  \hline
+  Verdadeiro Negativo (TN) & Controle classificado como controle & SNP não-causal não selecionado \\
+  \hline
+  \textbf{Precisão} & $\dfrac{\text{TP}}{\text{TP}+\text{FP}}$ & $\dfrac{\text{causais selecionados}}{\text{total selecionados}}$ \\[6pt]
+  \hline
+  \textbf{Sensibilidade} & $\dfrac{\text{TP}}{\text{TP}+\text{FN}}$ & $\dfrac{\text{causais selecionados}}{\text{total de causais}}$ \\[6pt]
+  \hline
+  \textbf{F1 Score} & $\dfrac{2\,\text{TP}}{2\,\text{TP}+\text{FP}+\text{FN}}$ & $\dfrac{2V}{T + C}$ \newline {\footnotesize ($C=8$ neste estudo)} \\[6pt]
+\end{tabular}
+\end{center}
+\renewcommand{\arraystretch}{1.3}
+
+\novo{A diferença fundamental está no objeto de análise: para as \textbf{observações}, o SVM decide se cada \emph{indivíduo} pertence ao grupo caso ou controle; para as \textbf{variáveis}, o método decide se cada \emph{SNP} é incluído ou excluído do conjunto selecionado, e avaliamos \textit{a posteriori} (com base na simulação) se os SNPs incluídos são realmente causais. Por isso, as métricas de variáveis \textbf{só podem ser calculadas em dados simulados}, onde a ``verdade'' (quais SNPs são causais) é conhecida --- uma vantagem fundamental dos estudos de simulação para validação de métodos de seleção de marcadores.}
+
+% ---- Exemplos numéricos ----------------------------------------
+\subsection*{\novo{Exemplos Numéricos Ilustrativos}}
+
+\novo{Para fixar a interpretação, considere três cenários hipotéticos com base no mesmo conjunto simulado (100 SNPs totais, 8 causais). Em cada cenário, um método diferente seleciona um subconjunto de SNPs. Avalia-se também a classificação de 200 indivíduos (100 casos, 100 controles).}
+
+\medskip
+\noindent\novo{\textbf{Cenário A --- Método muito inclusivo} (e.g.\ SMS Radial $\gamma = 0{,}001$):}
+\begin{itemize}
+  \item \novo{Selecionou 40 SNPs, dos quais 7 são causais e 33 são irrelevantes.}
+  \item \novo{Classificou corretamente 160 dos 200 indivíduos.}
+\end{itemize}
+\[
+  \novo{\text{Prec.\ Var.} = \frac{7}{40} = 17{,}5\% \qquad
+   \text{Sens.\ Var.} = \frac{7}{8} = 87{,}5\% \qquad
+   \text{F1\ Var.} = \frac{2\times7}{40+8} = 29{,}2\%}
+\]
+\[
+  \novo{\text{Ac.\ Obs.} = \frac{160}{200} = 80{,}0\%}
+\]
+\novo{Interpretação: o método recuperou quase todos os SNPs causais (alta sensibilidade), mas incluiu muitos irrelevantes (baixa precisão). A acurácia das observações é razoável, mas pode ser inflada pelo desbalanceamento.}
+
+\medskip
+\noindent\novo{\textbf{Cenário B --- Método equilibrado} (e.g.\ SMS Radial $\gamma = 0{,}1$):}
+\begin{itemize}
+  \item \novo{Selecionou 10 SNPs, dos quais 7 são causais e 3 são irrelevantes.}
+  \item \novo{Classificou corretamente 172 dos 200 indivíduos.}
+\end{itemize}
+\[
+  \novo{\text{Prec.\ Var.} = \frac{7}{10} = 70{,}0\% \qquad
+   \text{Sens.\ Var.} = \frac{7}{8} = 87{,}5\% \qquad
+   \text{F1\ Var.} = \frac{2\times7}{10+8} = 77{,}8\%}
+\]
+\[
+  \novo{\text{Ac.\ Obs.} = \frac{172}{200} = 86{,}0\%}
+\]
+\novo{Interpretação: melhor equilíbrio entre precisão e sensibilidade. O F1 Var. é consideravelmente superior ao Cenário A, indicando que o subconjunto selecionado é ao mesmo tempo puro e abrangente.}
+
+\medskip
+\noindent\novo{\textbf{Cenário C --- Método muito restritivo} (e.g.\ Interseção / Valor-$p$ corrigido):}
+\begin{itemize}
+  \item \novo{Selecionou 3 SNPs, todos causais (nenhum irrelevante).}
+  \item \novo{Classificou corretamente 165 dos 200 indivíduos.}
+\end{itemize}
+\[
+  \novo{\text{Prec.\ Var.} = \frac{3}{3} = 100{,}0\% \qquad
+   \text{Sens.\ Var.} = \frac{3}{8} = 37{,}5\% \qquad
+   \text{F1\ Var.} = \frac{2\times3}{3+8} = 54{,}5\%}
+\]
+\[
+  \novo{\text{Ac.\ Obs.} = \frac{165}{200} = 82{,}5\%}
+\]
+\novo{Interpretação: precisão máxima (sem falsos positivos), mas 5 SNPs causais foram perdidos (baixa sensibilidade). O F1 Var. é inferior ao Cenário B, demonstrando que \textbf{100\% de precisão não implica necessariamente a melhor seleção geral}, especialmente quando há perda expressiva de marcadores causais relevantes.}
+
+\medskip
+\novo{\textbf{Conclusão dos exemplos:} o Cenário B domina os demais sob o critério do F1 Var., pois equilibra simultaneamente a pureza do conjunto selecionado e a cobertura dos SNPs causais verdadeiros. Essa conclusão seria invisível ao se analisar apenas a Ac.\ Obs.\ ou apenas a Prec.\ Var.\ isoladamente, reforçando a necessidade de se reportar as três métricas em conjunto.}
+
+% =============================================================
+\section*{\novo{O Parâmetro $\gamma$ do SVM como Controle de Regularização e sua Influência na Seleção de SNPs}}
+% =============================================================
+
+\novo{\subsection*{Definição formal e papel nos kernels RBF}}
+
+\novo{No \textit{Support Vector Machine} com kernel de Função de Base Radial (RBF), a função de kernel é definida como:}
+\[
+  \novo{K(\mathbf{x}_i, \mathbf{x}_j) = \exp\!\left(-\gamma \,\|\mathbf{x}_i - \mathbf{x}_j\|^2\right), \quad \gamma > 0}
+\]
+\novo{O parâmetro $\gamma$ controla o \textbf{raio de influência} de cada amostra de treinamento sobre a fronteira de decisão. Matematicamente, $\gamma = \frac{1}{2\sigma^2}$, onde $\sigma^2$ é a variância da distribuição gaussiana implícita no kernel. Portanto:}
+\begin{itemize}
+  \item \novo{\textbf{$\gamma$ pequeno} (e.g.\ $\gamma = 0{,}001$): $\sigma^2$ grande $\Rightarrow$ cada amostra exerce influência \emph{ampla} sobre o espaço de características. A fronteira de decisão tende a ser \textbf{suave e global}, capturando estruturas de longa escala nos dados.}
+  \item \novo{\textbf{$\gamma$ grande} (e.g.\ $\gamma = 1{,}0$): $\sigma^2$ pequeno $\Rightarrow$ cada amostra exerce influência \emph{restrita} ao seu entorno imediato. A fronteira de decisão torna-se \textbf{complexa e localizada}, podendo capturar padrões muito específicos mas com maior risco de superajustamento (\textit{overfitting}).}
+\end{itemize}
+
+\novo{\subsection*{$\gamma$ como parâmetro de regularização implícita}}
+
+\novo{Embora a regularização explícita no SVM seja controlada pelo parâmetro $C$ (custo de violação da margem), $\gamma$ atua como um \textbf{regulador implícito da complexidade do modelo} no espaço de características. Para o kernel linear, não existe $\gamma$ e a fronteira é definida por um hiperplano em alta dimensão determinado apenas pelo parâmetro $C$. Para o kernel RBF, a interação entre $C$ e $\gamma$ define a flexibilidade efetiva do modelo:}
+\[
+  \novo{\text{Complexidade efetiva} \propto C \cdot \gamma}
+\]
+\novo{Valores baixos de $\gamma$ (com $C$ fixo) tendem a reduzir a complexidade do modelo de forma similar a aumentar a regularização $L_2$: a superfície de decisão torna-se mais ``conservadora'' e generaliza melhor para dados não vistos, mas pode não capturar variações genéticas sutis entre os SNPs. Valores altos de $\gamma$ aumentam a complexidade do modelo, permitindo capturar padrões não-lineares mais finos, porém com risco de aprender ruído genômico ao invés de sinal causal.}
+
+\novo{\subsection*{Impacto de $\gamma$ na seleção de SNPs no método SMS}}
+
+\novo{No método SMS (\textit{Sequential Multi-Step}), o SVM é aplicado em duas etapas encadeadas: (1) a \textbf{etapa de corte} (\textit{cutting step}), em que o SVM é treinado iterativamente para eliminar SNPs com base em uma métrica de desempenho (acurácia ou F1 Score), e (2) o \textbf{refinamento pelo Algoritmo Genético} (GA), que busca o subconjunto ótimo de SNPs dentre os pré-selecionados. O valor de $\gamma$ afeta diretamente a etapa de corte, determinando quais SNPs sobrevivem para a fase do GA. Os efeitos observados nos experimentos desta análise são:}
+
+\begin{description}
+  \item[\novo{$\gamma = 0{,}001$ (baixa complexidade):}]
+  \novo{O kernel RBF com $\gamma$ muito pequeno aproxima-se do comportamento do kernel linear, produzindo fronteiras de decisão suaves que tratam os SNPs de forma quase equivalente. Como consequência, o SVM mantém um número \textbf{elevado de SNPs} na etapa de corte, resultando em alta sensibilidade mas baixa precisão das variáveis. Nas tabelas de resultados, este kernel frequentemente apresenta os maiores conjuntos de SNPs selecionados (União), com F1 Var. elevado pela recuperação dos SNPs causais, mas com potencial inclusão de marcadores irrelevantes.}
+
+  \item[\novo{$\gamma = 0{,}1$ (complexidade moderada):}]
+  \novo{Este valor representa o ponto de equilíbrio entre generalização e especialização. O kernel RBF com $\gamma = 0{,}1$ consegue capturar não-linearidades moderadas presentes na relação genótipo--fenótipo sem ajustar-se excessivamente ao ruído. Nos experimentos, este kernel frequentemente apresenta o \textbf{melhor compromisso} entre precisão e sensibilidade das variáveis, resultando nos maiores valores de F1 Var. em ambas as bases simuladas. É o valor mais recomendado como ponto de partida na ausência de informação prévia sobre a estrutura genética dos dados.}
+
+  \item[\novo{$\gamma = 1{,}0$ (alta complexidade):}]
+  \novo{Com influência restrita ao entorno imediato de cada amostra, o SVM com $\gamma = 1{,}0$ torna-se \textbf{altamente sensível a variações locais} nos dados de treinamento. Na etapa de corte, este kernel pode tanto selecionar SNPs irrelevantes (que aparecem como localmente informativos por acaso) quanto descartar SNPs causais com efeito aditivo suave. Nas tabelas, este kernel apresenta comportamento variável: em bases balanceadas pode atingir F1 Var. comparável ao $\gamma = 0{,}1$, mas em bases desbalanceadas (onde o ruído amostral é maior) tende a apresentar queda de desempenho tanto na Ac.\ Obs.\ quanto no F1 Var.}
+
+  \item[\novo{Kernel Linear (sem $\gamma$):}]
+  \novo{O kernel linear define a fronteira de decisão como um hiperplano no espaço original dos SNPs. A separação é determinada pelos coeficientes do vetor de pesos $\mathbf{w}$, que refletem a importância relativa de cada SNP. Na etapa de corte do SMS, o kernel linear tende a produzir seleções \textbf{estáveis e interpretáveis}, pois a relevância de cada SNP é representada diretamente pelo seu coeficiente no vetor de suporte. Porém, quando a relação genótipo--fenótipo é não-linear (como na Base 2 com interações epistáticas), o kernel linear pode ser insuficiente para capturar os padrões causais, resultando em menor sensibilidade das variáveis.}
+\end{description}
+
+\novo{\subsection*{Relação entre $\gamma$ e os resultados observados nas tabelas}}
+
+\novo{A tabela a seguir sintetiza o comportamento esperado e o padrão observado nos resultados em função de $\gamma$:}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{L{2.5cm}|C{2.2cm}|C{2.2cm}|C{2.2cm}|C{3.0cm}}
+  \textbf{Kernel / $\gamma$} & \textbf{Complexidade} & \textbf{Prec. Var.} & \textbf{Sens. Var.} & \textbf{Padrão Geral} \\
+  \hline
+  Linear & Baixa--Mod. & Moderada & Moderada & Estável; pior em epistasia \\
+  \hline
+  RBF $\gamma=0{,}001$ & Baixa & Baixa & Alta & Muitos SNPs; ruído incl. \\
+  \hline
+  RBF $\gamma=0{,}1$ & Moderada & Alta & Alta & Melhor F1 Var. geral \\
+  \hline
+  RBF $\gamma=1{,}0$ & Alta & Variável & Variável & Instável; piora c/ desbal. \\
+\end{tabular}
+\end{center}
+\renewcommand{\arraystretch}{1.3}
+
+\novo{Essa análise evidencia que \textbf{a escolha de $\gamma$ não é trivial} e deve ser interpretada em conjunto com os resultados de seleção de SNPs. Um $\gamma$ muito pequeno pode sugerir alta acurácia das observações por produzir um modelo simples e estável, mas ao custo de incluir muitos SNPs irrelevantes (baixa precisão das variáveis). Um $\gamma$ muito grande pode adaptar-se excessivamente ao conjunto de treinamento, inflacionando artificialmente a métrica de corte e resultando em seleções instáveis entre réplicas. O valor $\gamma = 0{,}1$ emerge consistentemente como o mais adequado para o contexto de seleção de SNPs com dados genômicos simulados, tanto em condições balanceadas quanto desbalanceadas, corroborando o padrão observado nas tabelas ao longo deste relatório.}
+
+% =============================================================
+\section{\novo{Base de Dados 1 --- Efeitos Independentes}}
+% =============================================================
+
+\novo{A Base de Dados 1 foi simulada com oito SNPs causais de efeito aditivo e independente (SNPs 1 a 8), sem interações epistáticas entre os marcadores. Essa configuração representa o cenário mais simples de associação genótipo--fenótipo, no qual os efeitos genéticos atuam de forma linear e aditiva sobre o fenótipo simulado. Os SNPs em negrito nas tabelas abaixo indicam marcadores causais verdadeiros.}
+
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 1 --- Balanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 1 --- Base Balanceada (50\%/50\%)}
+\label{tab:t1}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               12,33,36,71,78,89} &
+  13 (7) & 72,20 & 53,8 & 87,5 & 66,7 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8},\\
+               12,33,36,59,89} &
+  12 (7) & 71,50 & 58,3 & 87,5 & 70,0 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},12,31,33,58,71} &
+  13 (8) & 72,70 & 61,5 & 100,0 & 76,2 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},29,\\
+               59,78} &
+  9 (6) & 84,80 & 66,7 & 75,0 & 70,6 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{5},\textbf{7},\textbf{8},31,71} &
+  7 (5) & 75,80 & 71,4 & 62,5 & 66,7 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},12,29,\\
+               31,33,36,58,59,71,78,89} &
+  18 (8) & --- & 44,4 & 100,0 & 61,5 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{5},\textbf{7},\textbf{8}} &
+  5 (5) & --- & 100,0 & 62,5 & 76,9 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               10,12,30,33,54,71} &
+  13 (7) & --- & 53,8 & 87,5 & 66,7 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{4},\textbf{7},\textbf{8},12} &
+  5 (4) & --- & 80,0 & 50,0 & 61,5 \\
+\hline
+\end{tabular}
+\end{table}
+
+Comparando os métodos, nota-se inicialmente que os SNPs causais não possuem acurácia associada, servindo apenas como conjunto base. Verifica-se que o método SMS com kernel Linear selecionou 13 SNPs, sendo 7 deles correspondentes aos SNPs causais, demonstra que, embora o kernel Linear tenda a capturar apenas relações lineares, ele ainda foi capaz de recuperar uma quantidade relevante de SNPs causais. Por outro lado, o kernel Radial apresentou comportamento semelhante em termos de identificação dos SNPs verdadeiros. Para $\gamma = 0{,}001$, o método selecionou 12 SNPs, também com 7 SNPs causais, evidenciando maior parcimônia na seleção sem perda na recuperação dos SNPs realmente associados.
+
+Quando se aumenta $\gamma$ para 0,01, o método seleciona 13 SNPs sendo 8 SNPs causais e apenas 5 não causais. Esse cenário representa o melhor desempenho biológico entre todas as configurações analisadas, uma vez que o método recupera integralmente o conjunto de SNPs verdadeiramente associados e mantém um número reduzido de falsos positivos. Apesar de não apresentar a maior acurácia entre os métodos SVM, essa configuração demonstra maior capacidade de identificação das relações estruturais simuladas.
+
+Entretanto, ao elevar $\gamma$ para 1,0, o número de SNPs selecionados diminui para 9, dos quais 6 são causais. Embora essa configuração apresente a maior acurácia entre os modelos avaliados, seu desempenho em termos de identificação dos SNPs causais não supera aquele obtido para $\gamma = 0{,}01$. Esse resultado sugere que valores altos de $\gamma$, como $\gamma = 1{,}0$, podem levar o modelo a sobreajuste (\textit{overfitting}), capturando ruídos e perdendo generalização, reduzindo assim a capacidade do SMS de selecionar SNPs relevantes.
+
+Os métodos União e Interseção, que combinam conjuntos de SNPs obtidos por diferentes abordagens, apresentaram performances intermediárias. A União resulta em um conjunto ampliado de 18 SNPs, agregando todos os SNPs identificados por qualquer configuração, o que tende a aumentar a complexidade do modelo em função do maior número de variáveis consideradas. Enquanto a Interseção seleciona apenas 5 SNPs representando o conjunto mais restrito, no qual os SNPs aparecem de forma consistente em todas as configurações do SMS. Tais métodos, embora úteis para combinar evidências, não superaram o melhor resultado obtido pelo SMS-kernel Radial $\gamma = 0{,}01$.
+
+No que se refere aos métodos baseados em valor-$p$, observa-se que o valor-$p$ bruto seleciona 13 SNPs, dos quais apenas 7 são causais, indicando uma taxa moderada de verdadeiros positivos e uma quantidade elevada de falsos positivos. Já o valor-$p$ corrigido, seleciona apenas 5 SNPs, dos quais 4 são causais, representando o método mais parcimonioso entre os univariados.
+
+De forma geral, pode-se concluir que considerando a capacidade de identificar SNPs verdadeiramente causais, o kernel Radial com $\gamma = 0{,}01$ apresentou o melhor desempenho dentre todos os métodos avaliados. Essa configuração recuperou 100\% dos SNPs causais e manteve o menor número de SNPs não causais entre os métodos. Embora o kernel Radial com $\gamma = 0{,}1$ tenha apresentado a maior acurácia, o critério biológico de identificação de marcadores relevantes favorece $\gamma = 0{,}01$.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}01$ destacou-se como o melhor método SMS com F1 Var.\ = 76,2\% (Prec.\ = 61,5\%, Sens.\ = 100,0\%). O SMS Linear apresentou o menor F1 Var.\ entre os SMS (66,7\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 76,9\%) é superior ao melhor SMS em F1, com Prec.\ = 100,0\% e Sens.\ = 62,5\%. O Valor-$p$ corrigido obteve F1 Var.\ = 61,5\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 44,4\%, resultando em F1 Var.\ = 61,5\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 1 --- Desbalanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 1 --- Base Desbalanceada (80\%/20\%)}
+\label{tab:t2}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,10,\\
+               11,13,14,16,17,20,22,\\
+               24,28,31,\\
+               33,35,36,43,47,49,50,\\
+               52,53,54,\\
+               55,56,59,60,63,65,66,\\
+               67,68,69,\\
+               71,72,73,75,76,77,84,\\
+               87,88,89,\\
+               92,94,97} &
+  53 (8) & 80,50 & 15,1 & 100,0 & 26,2 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{3,\textbf{5},24,36,43,50,59,\\
+               60,65,76,92} &
+  11 (2) & 80,00 & 18,2 & 25,0 & 21,1 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,10,\\
+               11,14,16,17,20,22,24,\\
+               25,26,28,\\
+               31,32,33,35,36,39,43,\\
+               44,47,49,\\
+               50,52,53,54,55,56,58,\\
+               59,60,63,\\
+               65,66,68,69,71,72,73,\\
+               75,76,77,\\
+               82,83,84,85,86,87,92,\\
+               94,99,100} &
+  60 (8) & 80,10 & 13,3 & 100,0 & 23,5 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},11,\\
+               20,24,50} &
+  10 (6) & 87,40 & 60,0 & 75,0 & 66,7 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{5},\textbf{7},\textbf{8},20,24,\\
+               71} &
+  8 (5) & 84,60 & 62,5 & 62,5 & 62,5 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  65 SNPs (todos os causais incluídos; união de todas as seleções acima) &
+  65 (8) & --- & 12,3 & 100,0 & 21,9 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{5},24} &
+  2 (1) & --- & 50,0 & 12,5 & 20,0 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               27,28,42,89} &
+  11 (7) & --- & 63,6 & 87,5 & 73,7 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{7},\textbf{8}} &
+  5 (5) & --- & 100,0 & 62,5 & 76,9 \\
+\hline
+\end{tabular}
+\end{table}
+
+Inicialmente, observa-se que o método SMS com kernel Linear selecionou um conjunto relativamente grande de variáveis, totalizando 53 SNPs, dentre os quais todos os oito SNPs causais foram recuperados. Esse resultado indica uma elevada capacidade de cobertura dos SNPs relevantes. Entretanto, o grande número de SNPs não causais incluídos no conjunto final revela uma baixa parcimônia do método, o que pode dificultar a interpretação biológica dos resultados.
+
+No caso do SMS com kernel Radial e parâmetro $\gamma = 0{,}001$, verifica-se uma redução significativa no número de SNPs selecionados, com apenas 11 SNPs compondo o modelo final. Contudo, apenas dois SNPs causais foram identificados nesse conjunto, o que representa uma baixa taxa de recuperação dos SNPs relevantes. Embora o método apresente maior seletividade, a perda de informações causais indica que valores muito baixos de $\gamma$ podem resultar em modelos excessivamente restritivos.
+
+Para o SMS com kernel Radial e $\gamma = 0{,}01$, observa-se novamente um aumento expressivo no número de SNPs selecionados, totalizando 60 variáveis. Esse método apresenta elevada recuperação dos SNPs causais, aproximando-se da cobertura total, porém à custa da inclusão de um grande número de SNPs não causais. Assim, o modelo apresenta baixa pureza do conjunto selecionado.
+
+O melhor desempenho em termos de equilíbrio entre número de SNPs selecionados e recuperação de SNPs causais é observado no SMS com kernel Radial e $\gamma = 0{,}1$. Nessa configuração, o método selecionou apenas 10 SNPs, dos quais seis são causais. Esse resultado indica uma elevada concentração de SNPs relevantes no conjunto final. Embora dois SNPs causais não tenham sido recuperados, o método apresenta um compromisso favorável entre parcimônia e desempenho preditivo.
+
+De forma semelhante, o SMS com kernel Radial e $\gamma = 1{,}0$ selecionou oito SNPs, sendo cinco deles causais. Apesar de manter um conjunto reduzido e relativamente puro, esse método apresenta uma taxa de recuperação dos SNPs causais inferior à obtida com $\gamma = 0{,}1$, o que sugere que valores mais elevados de $\gamma$ podem levar à exclusão de variáveis relevantes, ainda que contribuam para modelos mais compactos.
+
+A abordagem de união dos métodos avaliados resultou na seleção de um conjunto amplo de SNPs, totalizando 65 variáveis, com recuperação praticamente completa dos SNPs causais. No entanto, assim como observado no SMS Linear, o elevado número de SNPs não causais incluídos compromete a parcimônia do modelo. Por outro lado, a interseção entre os métodos apresentou comportamento oposto, selecionando apenas dois SNPs, dos quais apenas um é causal. Esse resultado evidencia que, embora a interseção produza conjuntos extremamente reduzidos e conservadores, ela tende a descartar a maior parte das variáveis relevantes, limitando severamente sua capacidade de recuperação dos SNPs causais.
+
+Em relação aos métodos estatísticos, o uso do valor-$p$ bruto resultou na seleção de 11 SNPs, com recuperação de uma parcela significativa dos SNPs causais. Esse método apresentou um equilíbrio razoável entre número de variáveis selecionadas e recuperação de informações relevantes, embora ainda inclua SNPs não causais. Já o valor-$p$ corrigido mostrou-se extremamente conservador, selecionando apenas cinco SNPs, todos eles causais. Apesar da elevada pureza do conjunto selecionado, a exclusão de parte dos SNPs causais indica que a correção para múltiplos testes, embora reduza falsos positivos, pode comprometer a sensibilidade do método.
+
+De modo geral, os resultados evidenciam que métodos mais inclusivos, como SMS Linear e união, garantem alta recuperação dos SNPs causais, porém com baixa parcimônia, enquanto métodos mais restritivos, como interseção e valor-$p$ corrigido, produzem conjuntos altamente puros, mas com perda de variáveis relevantes. Nesse contexto, o SMS com kernel Radial e $\gamma = 0{,}1$ destaca-se como a alternativa mais equilibrada, conciliando número reduzido de SNPs selecionados e boa recuperação dos SNPs causais, configurando-se como a abordagem mais adequada para aplicações que exigem simultaneamente desempenho preditivo e interpretabilidade biológica.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}1$ destacou-se como o melhor método SMS com F1 Var.\ = 66,7\% (Prec.\ = 60,0\%, Sens.\ = 75,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (21,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 20,0\%) é inferior ao melhor SMS em F1, com Prec.\ = 50,0\% e Sens.\ = 12,5\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (62,5\%) reduz o F1 Var.\ para 76,9\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 12,3\%, resultando em F1 Var.\ = 21,9\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 1 --- Base Balanceada, Validação Balanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 1 --- Base Balanceada, Validação Balanceada}
+\label{tab:t5}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8},\\
+               36,59,89} &
+  10 (7) & 72,10 & 70,0 & 87,5 & 77,8 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{7},\textbf{8},11,\\
+               12,16,17,\\
+               20,27,29,48,53,54,58,\\
+               61,63,69,\\
+               73,86,88,91,93,99} &
+  26 (6) & 71,50 & 23,1 & 75,0 & 35,3 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               29,59} &
+  9 (7) & 74,20 & 77,8 & 87,5 & 82,4 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},12,27,28,33} &
+  12 (8) & 83,80 & 66,7 & 100,0 & 80,0 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},28,\\
+               71,89} &
+  9 (6) & 78,50 & 66,7 & 75,0 & 70,6 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},11,12,\\
+               16,17,20,27,28,29,33,\\
+               36,48,53,\\
+               54,58,59,61,63,69,71,\\
+               73,86,88,\\
+               89,91,93,99} &
+  34 (8) & --- & 23,5 & 100,0 & 38,1 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{7},\textbf{8}} &
+  5 (5) & --- & 100,0 & 62,5 & 76,9 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               10,12,30,33,54,71} &
+  13 (7) & --- & 53,8 & 87,5 & 66,7 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{4},\textbf{7},\textbf{8},12} &
+  5 (4) & --- & 80,0 & 50,0 & 61,5 \\
+\hline
+\end{tabular}
+\end{table}
+
+O método SMS com kernel Linear selecionou 10 SNPs, dos quais 7 correspondem aos SNPs causais. Esse resultado demonstra que, mesmo considerando apenas relações lineares entre as variáveis, o método foi capaz de recuperar uma quantidade relevante de marcadores verdadeiros. Entretanto, a presença de 3 SNPs não causais indica que o modelo ainda incorpora variáveis irrelevantes no conjunto selecionado.
+
+Ao utilizar o kernel Radial com $\gamma = 0{,}001$, observa-se um aumento expressivo no número de SNPs selecionados. Nessa configuração, o método seleciona 26 SNPs, dos quais 6 são causais. Embora o modelo consiga identificar parte dos SNPs verdadeiros, o elevado número de variáveis selecionadas indica baixa parcimônia, com grande inclusão de SNPs não associados, o que reduz a eficiência do método na identificação precisa dos marcadores relevantes.
+
+Quando o parâmetro é ajustado para $\gamma = 0{,}01$, o método seleciona 9 SNPs, dos quais 7 são causais. Esse resultado demonstra uma melhora significativa na parcimônia do modelo, pois reduz o número total de variáveis selecionadas sem comprometer substancialmente a recuperação dos SNPs causais. Dessa forma, essa configuração apresenta um bom equilíbrio entre identificação de marcadores verdadeiros e controle de falsos positivos.
+
+Para $\gamma = 0{,}1$, o método seleciona 12 SNPs, dos quais 8 correspondem aos SNPs causais, recuperando todos os marcadores verdadeiramente associados. Nesse cenário, apenas 4 SNPs não causais são incluídos, indicando uma boa capacidade do método em identificar corretamente os SNPs relevantes mantendo um número relativamente reduzido de variáveis irrelevantes.
+
+Entretanto, ao aumentar o parâmetro para $\gamma = 1{,}0$, o número de SNPs selecionados diminui para 9, dos quais 6 são causais. Embora o conjunto selecionado permaneça relativamente compacto, observa-se uma redução na recuperação de SNPs verdadeiros, sugerindo que valores mais elevados de $\gamma$ podem reduzir a capacidade do método de identificar todos os marcadores associados.
+
+O método União, que reúne todos os SNPs selecionados pelos diferentes modelos, resulta em um conjunto ampliado de 34 SNPs, contendo 8 SNPs causais. Embora essa abordagem garanta a recuperação completa dos marcadores verdadeiros, ela também inclui um grande número de SNPs não causais, aumentando a complexidade do modelo. Por outro lado, o método de Interseção seleciona apenas 5 SNPs, todos correspondentes a SNPs causais. Esse resultado demonstra alta precisão na identificação das variáveis relevantes, uma vez que não há inclusão de falsos positivos. No entanto, o método deixa de recuperar 3 SNPs causais, tornando-se excessivamente restritivo.
+
+Nos métodos baseados em valor-$p$, observa-se que o valor-$p$ bruto seleciona 13 SNPs, dos quais 7 são causais, indicando uma capacidade moderada de recuperação dos marcadores verdadeiros, porém com presença de variáveis irrelevantes. Já o valor-$p$ corrigido seleciona 5 SNPs, sendo 4 causais, o que demonstra maior restrição na seleção das variáveis, mas com perda adicional na identificação de SNPs verdadeiros.
+
+De forma geral, observa-se que os métodos baseados em SMS com kernel Radial apresentam melhor desempenho na identificação dos SNPs causais em comparação ao kernel Linear e aos métodos baseados em valor-$p$. Entre as configurações analisadas, o kernel Radial com $\gamma = 0{,}1$ destaca-se por recuperar todos os SNPs causais, mantendo um número relativamente reduzido de variáveis não causais. Por outro lado, o método de Interseção apresenta o conjunto mais parcimonioso, selecionando apenas SNPs causais, embora deixe de identificar parte dos marcadores verdadeiros. Assim, os resultados indicam que a escolha adequada do parâmetro $\gamma$ no kernel Radial exerce forte influência na capacidade de identificação dos SNPs associados, permitindo alcançar um equilíbrio entre recuperação dos marcadores verdadeiros e controle de falsos positivos.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}01$ destacou-se como o melhor método SMS com F1 Var.\ = 82,4\% (Prec.\ = 77,8\%, Sens.\ = 87,5\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (35,3\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 76,9\%) é inferior ao melhor SMS em F1, com Prec.\ = 100,0\% e Sens.\ = 62,5\%. O Valor-$p$ corrigido obteve F1 Var.\ = 61,5\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 23,5\%, resultando em F1 Var.\ = 38,1\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 1 --- Base Balanceada, Validação Desbalanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 1 --- Base Balanceada, Validação Desbalanceada
+         (mesma seleção de SNPs da Tabela~\ref{tab:t1})}
+\label{tab:t6}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               12,33,36,71,78,89} &
+  13 (7) & 72,20 & 53,8 & 87,5 & 66,7 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8},\\
+               12,33,36,59,89} &
+  12 (7) & 71,50 & 58,3 & 87,5 & 70,0 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},12,31,33,58,71} &
+  13 (8) & 72,70 & 61,5 & 100,0 & 76,2 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},29,\\
+               59,78} &
+  9 (6) & 84,80 & 66,7 & 75,0 & 70,6 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{5},\textbf{7},\textbf{8},31,71} &
+  7 (5) & 75,80 & 71,4 & 62,5 & 66,7 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},12,29,\\
+               31,33,36,58,59,71,78,89} &
+  18 (8) & --- & 44,4 & 100,0 & 61,5 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{5},\textbf{7},\textbf{8}} &
+  5 (5) & --- & 100,0 & 62,5 & 76,9 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               10,12,30,33,54,71} &
+  13 (7) & --- & 53,8 & 87,5 & 66,7 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{4},\textbf{7},\textbf{8},12} &
+  5 (4) & --- & 80,0 & 50,0 & 61,5 \\
+\hline
+\end{tabular}
+\end{table}
+
+O método SMS com kernel Linear selecionou 13 SNPs, dos quais 7 correspondem aos SNPs causais. Esse resultado demonstra que o modelo é capaz de recuperar uma parcela significativa dos marcadores relevantes, porém inclui 6 SNPs não causais, indicando presença moderada de falsos positivos e uma menor parcimônia na seleção das variáveis.
+
+Ao utilizar o kernel Radial com $\gamma = 0{,}001$, observa-se uma pequena redução no número de SNPs selecionados. Nessa configuração, o método seleciona 12 SNPs, dos quais 7 são causais. Esse resultado apresenta desempenho semelhante ao kernel Linear na recuperação dos SNPs verdadeiros, porém com um número ligeiramente menor de variáveis totais, indicando uma pequena melhoria na parcimônia do modelo.
+
+Quando o parâmetro é ajustado para $\gamma = 0{,}01$, o método seleciona 13 SNPs, dos quais 8 correspondem aos SNPs causais, recuperando todos os SNPs verdadeiramente associados. Nesse cenário, apenas 5 SNPs não causais são incluídos, o que indica uma boa capacidade do método em identificar corretamente os marcadores relevantes sem aumentar excessivamente o número de variáveis selecionadas.
+
+Para $\gamma = 0{,}1$, o método seleciona 9 SNPs, dos quais 6 são causais. Embora o conjunto selecionado seja mais compacto, observa-se uma redução na recuperação de SNPs verdadeiros, indicando que parte dos marcadores associados deixa de ser identificada nessa configuração.
+
+Quando o parâmetro é elevado para $\gamma = 1{,}0$, o método seleciona 7 SNPs, dos quais 5 são causais. Apesar de apresentar o menor conjunto de variáveis entre as configurações do SMS, observa-se uma perda ainda maior na recuperação dos SNPs causais, sugerindo que valores elevados de $\gamma$ tornam o modelo mais restritivo na seleção das variáveis.
+
+Entre os métodos de combinação, o método União reúne todos os SNPs selecionados pelos diferentes modelos, resultando em um conjunto ampliado de 18 SNPs, dos quais 8 são causais. Essa abordagem garante a recuperação completa dos marcadores verdadeiros, porém inclui um número considerável de SNPs não causais, aumentando a complexidade do conjunto selecionado.
+
+Por outro lado, o método de Interseção seleciona apenas 5 SNPs, todos correspondentes a SNPs causais. Esse resultado demonstra alta precisão na identificação das variáveis relevantes, uma vez que não há inclusão de falsos positivos. Entretanto, o método deixa de recuperar 3 SNPs causais, caracterizando um comportamento excessivamente conservador. Nos métodos baseados em valor-$p$, observa-se que o valor-$p$ bruto seleciona 13 SNPs, dos quais 7 são causais, indicando desempenho semelhante ao observado no SMS com kernel Linear, com presença de falsos positivos no conjunto selecionado. Já o valor-$p$ corrigido seleciona 5 SNPs, sendo 4 deles causais, apresentando um conjunto bastante restrito, porém com perda significativa de SNPs verdadeiramente associados.
+
+De forma geral, observa-se que os métodos baseados em SMS com kernel Radial apresentam melhor capacidade de identificação dos SNPs causais em comparação aos métodos baseados em valor-$p$. Entre as configurações avaliadas, o kernel Radial com $\gamma = 0{,}01$ apresenta o melhor desempenho biológico, pois recupera 100\% dos SNPs causais mantendo um número relativamente controlado de SNPs não causais.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}01$ destacou-se como o melhor método SMS com F1 Var.\ = 76,2\% (Prec.\ = 61,5\%, Sens.\ = 100,0\%). O SMS Linear apresentou o menor F1 Var.\ entre os SMS (66,7\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 76,9\%) é superior ao melhor SMS em F1, com Prec.\ = 100,0\% e Sens.\ = 62,5\%. O Valor-$p$ corrigido obteve F1 Var.\ = 61,5\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 44,4\%, resultando em F1 Var.\ = 61,5\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 1 --- Base Desbalanceada, Validação Balanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 1 --- Base Desbalanceada, Validação Balanceada
+         (mesma seleção de SNPs da Tabela~\ref{tab:t2})}
+\label{tab:t7}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,10,\\
+               11,13,14,16,17,20,22,\\
+               24,28,31,\\
+               33,35,36,43,47,49,50,\\
+               52,53,54,\\
+               55,56,59,60,63,65,66,\\
+               67,68,69,\\
+               71,72,73,75,76,77,84,\\
+               87,88,89,\\
+               92,94,97} &
+  53 (8) & 80,50 & 15,1 & 100,0 & 26,2 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{3},\textbf{5},24,36,43,50,59,\\
+               60,65,76,92} &
+  11 (2) & 80,00 & 18,2 & 25,0 & 21,1 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,10,\\
+               11,14,16,17,20,22,24,\\
+               25,26,28,\\
+               31,32,33,35,36,39,43,\\
+               44,47,49,\\
+               50,52,53,54,55,56,58,\\
+               59,60,63,\\
+               65,66,68,69,71,72,73,\\
+               75,76,77,\\
+               82,83,84,85,86,87,92,\\
+               94,99,100} &
+  60 (8) & 80,10 & 13,3 & 100,0 & 23,5 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},11,\\
+               20,24,50} &
+  10 (6) & 87,40 & 60,0 & 75,0 & 66,7 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{5},\textbf{7},\textbf{8},20,24,\\
+               71} &
+  8 (5) & 84,60 & 62,5 & 62,5 & 62,5 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  65 SNPs (todos os causais incluídos) &
+  65 (8) & --- & 12,3 & 100,0 & 21,9 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{5},24} &
+  2 (1) & --- & 50,0 & 12,5 & 20,0 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               27,28,42,89} &
+  11 (7) & --- & 63,6 & 87,5 & 73,7 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{7},\textbf{8}} &
+  5 (5) & --- & 100,0 & 62,5 & 76,9 \\
+\hline
+\end{tabular}
+\end{table}
+
+Inicialmente, observa-se que o método SMS utilizando kernel Linear selecionou um conjunto bastante amplo de variáveis, totalizando 53 SNPs, incluindo todos os oito SNPs causais simulados. Esse comportamento demonstra elevada capacidade de recuperação dos marcadores relevantes, porém acompanhado da inclusão de grande quantidade de SNPs não causais, indicando baixa parcimônia na seleção.
+
+Ao analisar o kernel Radial com $\gamma = 0{,}001$, verifica-se uma redução significativa no número de variáveis selecionadas, totalizando apenas 11 SNPs. Entretanto, somente 2 SNPs causais foram recuperados, evidenciando perda considerável de informação relevante. Esse resultado sugere que valores muito baixos de $\gamma$ podem tornar o modelo excessivamente restritivo, dificultando a identificação adequada dos padrões associados aos SNPs verdadeiramente relevantes.
+
+Para $\gamma = 0{,}01$, o método apresentou comportamento oposto, selecionando 60 SNPs e recuperando todos os SNPs causais. Embora a recuperação completa dos marcadores relevantes seja desejável, o elevado número de variáveis irrelevantes demonstra baixa eficiência na filtragem, resultando em conjuntos pouco parcimoniosos.
+
+Já para $\gamma = 0{,}1$, observa-se o comportamento mais equilibrado dentre as configurações avaliadas. O método selecionou apenas 10 SNPs, dos quais 6 eram causais, demonstrando boa capacidade de recuperação dos marcadores relevantes com reduzida inclusão de falsos positivos. Esse resultado indica melhor equilíbrio entre sensibilidade e parcimônia, favorecendo maior interpretabilidade biológica.
+
+Quando $\gamma = 1{,}0$, o modelo tornou-se mais restritivo, selecionando apenas 8 SNPs, sendo 5 causais. Apesar da redução dimensional obtida, houve perda adicional de SNPs relevantes, indicando possível sobreajuste do modelo às estruturas locais dos dados.
+
+Os métodos de União e Interseção apresentaram comportamentos extremos. A União selecionou um conjunto extremamente amplo, contendo 65 SNPs e recuperando todos os SNPs causais, evidenciando elevada sensibilidade, porém baixa capacidade de filtragem. Em contrapartida, a Interseção selecionou apenas 2 SNPs, sendo somente 1 causal, demonstrando comportamento excessivamente conservador e elevada perda de informação relevante.
+
+Em relação aos métodos estatísticos, o valor-$p$ bruto selecionou 11 SNPs, dos quais 7 eram causais, apresentando desempenho intermediário entre recuperação de SNPs relevantes e controle de falsos positivos. Já o valor-$p$ corrigido apresentou comportamento mais conservador, selecionando apenas 5 SNPs, todos causais, indicando elevada precisão, porém com perda de parte das variáveis relevantes.
+
+De forma geral, o método que apresentou o melhor desempenho para a base de dados 1 desbalanceada foi o SMS com kernel Radial e $\gamma = 0{,}1$. Essa configuração demonstrou o melhor equilíbrio entre recuperação dos SNPs causais e redução de variáveis irrelevantes, evitando tanto o excesso de falsos positivos observado nos métodos mais sensíveis quanto a perda significativa de informação presente nas abordagens mais restritivas.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}1$ destacou-se como o melhor método SMS com F1 Var.\ = 66,7\% (Prec.\ = 60,0\%, Sens.\ = 75,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (21,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 20,0\%) é inferior ao melhor SMS em F1, com Prec.\ = 50,0\% e Sens.\ = 12,5\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (62,5\%) reduz o F1 Var.\ para 76,9\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 12,3\%, resultando em F1 Var.\ = 21,9\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 1 --- Base Desbalanceada, Validação Desbalanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 1 --- Base Desbalanceada, Validação Desbalanceada
+         (mesma seleção de SNPs da Tabela~\ref{tab:t2})}
+\label{tab:t8}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  53 SNPs (todos os 8 causais incluídos; mesma lista da Tabela~\ref{tab:t2}) &
+  53 (8) & 80,50 & 15,1 & 100,0 & 26,2 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{3},\textbf{5},24,36,43,50,59,\\
+               60,65,76,92} &
+  11 (2) & 80,00 & 18,2 & 25,0 & 21,1 \\
+\hline
+SMS & Radial & 0,01 &
+  60 SNPs (todos os 8 causais incluídos; mesma lista da Tabela~\ref{tab:t2}) &
+  60 (8) & 80,10 & 13,3 & 100,0 & 23,5 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},11,\\
+               20,24,50} &
+  10 (6) & 87,40 & 60,0 & 75,0 & 66,7 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{5},\textbf{7},\textbf{8},20,24,\\
+               71} &
+  8 (5) & 84,60 & 62,5 & 62,5 & 62,5 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  65 SNPs (todos os causais incluídos) &
+  65 (8) & --- & 12,3 & 100,0 & 21,9 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{5},24} &
+  2 (1) & --- & 50,0 & 12,5 & 20,0 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               27,28,42,89} &
+  11 (7) & --- & 63,6 & 87,5 & 73,7 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{7},\textbf{8}} &
+  5 (5) & --- & 100,0 & 62,5 & 76,9 \\
+\hline
+\end{tabular}
+\end{table}
+
+O método SMS com kernel Linear selecionou um conjunto bastante amplo de 53 SNPs, incluindo todos os SNPs causais. Esse comportamento evidencia uma alta capacidade de recuperação dos SNPs relevantes, porém acompanhado de um número elevado de falsos positivos, indicando baixa capacidade de filtragem. Ao analisar o kernel Radial com $\gamma = 0{,}001$, observa-se uma seleção significativamente mais restrita, 11 SNPs, com apenas 2 SNPs causais. Esse resultado sugere que valores muito baixos de $\gamma$ podem levar à subcaptura das relações relevantes, tornando o modelo incapaz de identificar a maioria dos SNPs verdadeiramente associados. Para $\gamma = 0{,}01$, o método selecionou 60 SNPs, incluindo todos os SNPs causais. Apesar da recuperação completa dos SNPs relevantes, há novamente a presença de um grande número de variáveis irrelevantes, evidenciando comportamento semelhante ao kernel Linear. Já para $\gamma = 0{,}1$, o modelo apresentou uma seleção mais equilibrada, 10 SNPs, sendo 6 causais, indicando uma melhor relação entre inclusão de SNPs relevantes e exclusão de ruído. Esse resultado sugere que esse valor de $\gamma$ favorece a identificação de padrões estruturais mais consistentes nos dados desbalanceados. Quando $\gamma = 1{,}0$, há uma redução adicional no número de SNPs selecionados, 8 SNPs, sendo 5 causais, o que indica um modelo mais restritivo. Nesse caso, observa-se uma tendência de perda de SNPs relevantes, possivelmente associada a um ajuste excessivamente específico às estruturas locais dos dados. Os métodos de União e Interseção mantêm comportamentos contrastantes. A União selecionou um conjunto bastante amplo, 65 SNPs, incluindo todos os causais, indicando alta capacidade de recuperação, porém com grande quantidade de falsos positivos. Por outro lado, a Interseção foi extremamente restritiva, 2 SNPs, sendo apenas 1 causal, evidenciando perda significativa de informação relevante. Em relação aos métodos baseados em testes estatísticos, o valor-$p$ bruto selecionou 11 SNPs, incluindo 7 causais, demonstrando boa capacidade de identificação dos SNPs relevantes, porém ainda com inclusão de variáveis irrelevantes. Já o valor-$p$ corrigido apresentou uma seleção mais conservadora (5 SNPs, todos causais), indicando alta precisão na seleção, mas com perda de parte dos SNPs verdadeiramente associados. Embora o método baseado em valor-$p$ bruto apresente maior recuperação de SNPs causais, o kernel Radial com $\gamma = 0{,}1$ demonstra melhor equilíbrio entre identificação de variáveis relevantes e controle de falsos positivos, sendo, portanto, mais adequado para a seleção de SNPs no cenário analisado.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}1$ destacou-se como o melhor método SMS com F1 Var.\ = 66,7\% (Prec.\ = 60,0\%, Sens.\ = 75,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (21,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 20,0\%) é inferior ao melhor SMS em F1, com Prec.\ = 50,0\% e Sens.\ = 12,5\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (62,5\%) reduz o F1 Var.\ para 76,9\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 12,3\%, resultando em F1 Var.\ = 21,9\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{\novo{SMS Completo --- Base 1 Desbalanceada com CV Estratificada e SMOTE-NC}}
+% ---------------------------------------------------------------
+
+\novo{Esta subseção apresenta os resultados do novo experimento aplicado à Base de Dados 1 Desbalanceada, incorporando o algoritmo SMOTE-NC (\textit{Synthetic Minority Over-sampling Technique for Nominal and Continuous features}) para balanceamento de classes durante o treinamento, em conjunto com validação cruzada estratificada de 10 partições (\textit{k}-fold estratificado). O Algoritmo Genético (GA) foi utilizado para seleção de SNPs, tendo como função de aptidão a Acurácia (experimento 1) ou o F1 Score (experimento 2).}
+
+\subsubsection{\novo{Acurácia como Função de Aptidão do GA}}
+
+\novo{A Tabela~\ref{tab:smote1acc} apresenta os resultados obtidos utilizando a acurácia como função de aptidão do GA, com SMOTE-NC e CV estratificada aplicados à Base 1 Desbalanceada. Os valores de aptidão do GA para cada configuração foram: Linear = 76,00\%; Radial $\gamma{=}0{,}001$ = 74,80\%; Radial $\gamma{=}0{,}01$ = 80,60\%; Radial $\gamma{=}0{,}1$ = 86,60\%; Radial $\gamma{=}1{,}0$ = 82,90\%.}
+
+
+\footnotesize
+\footnotesize
+\footnotesize
+\begin{longtable}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\caption{\novo{SMS Completo --- Base 1 Desbalanceada, SMOTE-NC, Acurácia como Aptidão do GA \novo{(Novo experimento: SMOTE-NC + CV Estratificada)}}} \label{tab:smote1acc} \\
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \novo{\textbf{SNPs selecionados}} & \novo{\textbf{\# SNPs (V)}} & \novo{\textbf{Fitness (Ac.\%)}} & \novo{\textbf{Prec.\ (\%)}} & \novo{\textbf{Sens.\ (\%)}} & \novo{\textbf{F1\ Var.\ (\%)}} \\
+\hline
+\endfirsthead
+\multicolumn{9}{l}{\footnotesize \novo{(continuação da Tabela~\ref{tab:smote1acc})}} \\
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \novo{\textbf{SNPs selecionados}} & \novo{\textbf{\# SNPs (V)}} & \novo{\textbf{Fitness (Ac.\%)}} & \novo{\textbf{Prec.\ (\%)}} & \novo{\textbf{Sens.\ (\%)}} & \novo{\textbf{F1\ Var.\ (\%)}} \\
+\hline
+\endhead
+\multicolumn{9}{r}{\footnotesize \textit{(continua...)}} \\
+\endfoot
+\hline
+\endlastfoot
+\multicolumn{2}{l|}{\novo{SNPs causais}} & \novo{---} &
+  \novo{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8}} & \novo{---} & \novo{---} & \novo{---} & \novo{---} & \novo{---} \\
+\hline
+\novo{SMS} & \novo{Linear} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               10,13,16,\\
+               20,22,24,25,32,36,43,\\
+               44,47,48,\\
+               49,50,52,54,55,56,58,\\
+               59,63,65,\\
+               67,68,72,76,79,82,83,\\
+               94,97}} &
+  \novo{39 (7)} & \novo{76,00} & \novo{17,9} & \novo{87,5} & \novo{29,8} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,001} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               9,10,11,\\
+               12,13,14,15,16,17,19,\\
+               21,22,23,\\
+               24,25,26,27,28,29,30,\\
+               31,32,33,\\
+               34,35,36,37,38,39,40,\\
+               41,42,43,\\
+               44,45,46,47,48,49,50,\\
+               51,52,53,\\
+               54,55,56,57,58,60,61,\\
+               62,63,64,\\
+               65,66,67,68,69,70,71,\\
+               72,73,74,\\
+               75,76,77,78,79,80,81,\\
+               82,83,84,\\
+               85,86,87,88,89,90,91,\\
+               92,93,94,\\
+               95,96,97,98,99,100}} &
+  \novo{99 (7)} & \novo{74,80} & \novo{7,1} & \novo{87,5} & \novo{13,1} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,01} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,10,\\
+               11,14,16,17,20,22,24,\\
+               25,26,28,\\
+               31,32,33,34,35,36,39,\\
+               43,44,47,\\
+               48,50,52,53,54,55,56,\\
+               58,59,60,\\
+               63,65,66,67,68,69,71,\\
+               72,73,75,\\
+               76,77,78,79,82,83,84,\\
+               85,86,87,\\
+               88,92,94,97,99,100}} &
+  \novo{66 (8)} & \novo{80,60} & \novo{12,1} & \novo{100,0} & \novo{21,6} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,1} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},36,\\
+               60,65,71,76}} &
+  \novo{11 (6)} & \novo{86,60} & \novo{54,5} & \novo{75,0} & \novo{63,2} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{1,0} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},24,\\
+               36,43,65}} &
+  \novo{10 (6)} & \novo{82,90} & \novo{60,0} & \novo{75,0} & \novo{66,7} \\
+\hline
+\multicolumn{2}{l|}{\novo{União}} & \novo{---} &
+  \novo{Todos os 100 SNPs} &
+  \novo{100 (8)} & \novo{---} & \novo{8,0} & \novo{100,0} & \novo{14,8} \\
+\hline
+\multicolumn{2}{l|}{\novo{Interseção}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},36,65}} &
+  \novo{7 (5)} & \novo{---} & \novo{71,4} & \novo{62,5} & \novo{66,7} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ bruto}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               27,28,42,89}} &
+  \novo{11 (7)} & \novo{---} & \novo{63,6} & \novo{87,5} & \novo{73,7} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ corrigido}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{7},\textbf{8}}} &
+  \novo{5 (5)} & \novo{---} & \novo{100,0} & \novo{62,5} & \novo{76,9} \\
+\hline
+\end{longtable}
+
+
+
+
+
+\novo{Nota: Para o melhor modelo (Radial $\gamma = 0{,}1$), as métricas adicionais sobre o conjunto de SNPs causais foram: ACC = 86,40\%; Precisão = 65,94\%; Revocação = 68,50\%; F1 = 66,70\%.}
+
+\novo{Ao incorporar o SMOTE-NC e a validação cruzada estratificada, observa-se uma mudança substancial no padrão de seleção em comparação com o experimento original sem balanceamento. O kernel Linear selecionou 39 SNPs, recuperando 7 dos 8 causais (ausente: SNP6), com fitness de 76,00\%. Esse resultado indica comportamento moderadamente inclusivo, com melhor recuperação de causais do que o modelo desbalanceado original (que também recuperou 8 causais, mas com 53 SNPs). O SMS Radial com $\gamma = 0{,}001$ apresentou comportamento extremamente inclusivo, selecionando 99 dos 100 SNPs disponíveis. Embora recupere 7 SNPs causais (ausente: SNP8), a inclusão de quase todo o espaço de variáveis inviabiliza qualquer interpretação biológica, indicando que, com SMOTE-NC, esse valor de $\gamma$ leva o modelo à ausência de filtragem efetiva.}
+
+\novo{Para $\gamma = 0{,}01$, o método recuperou todos os 8 SNPs causais em um conjunto de 66 SNPs, com fitness de 80,60\%. Embora a recuperação completa dos causais seja favorável, o número ainda elevado de SNPs não causais mantém a baixa parcimônia característica de valores intermediários de $\gamma$ em dados desbalanceados. A configuração com $\gamma = 0{,}1$ destaca-se como a mais equilibrada, selecionando apenas 11 SNPs com 6 causais e fitness de 86,60\%. Os SNPs não recuperados (SNP3 e SNP6) podem indicar efeitos aditivos marginalmente menores em relação aos demais causais. Esse resultado posiciona $\gamma = 0{,}1$ como a configuração mais eficiente, combinando alta fitness, parcimônia e boa recuperação de causais. Para $\gamma = 1{,}0$, o método selecionou 10 SNPs com 6 causais, desempenho ligeiramente inferior ao de $\gamma = 0{,}1$, confirmando que valores muito elevados de $\gamma$ podem excluir variáveis relevantes.}
+
+\novo{Os métodos de União e Interseção apresentaram comportamentos opostos. A União incluiu todos os 100 SNPs (todos os causais presentes), mostrando que, com SMOTE-NC, os diferentes modelos coletivamente cobrem todo o espaço de variáveis. A Interseção selecionou apenas 7 SNPs, sendo 5 causais (SNP36 e SNP65, não causais), indicando que esses SNPs aparecem consistentemente em múltiplas configurações. Os métodos baseados em valor-$p$ (bruto: 11 SNPs, 7 causais; corrigido: 5 SNPs, 5 causais) permaneceram sem alteração, pois independem do SMOTE-NC, servindo como referência comparativa. Em síntese, o SMOTE-NC melhorou a qualidade da seleção, especialmente para $\gamma = 0{,}1$, que apresentou o melhor equilíbrio entre acurácia, parcimônia e recuperação de causais.}
+
+\subsubsection{\novo{F1 Score como Função de Aptidão do GA}}
+
+\novo{A Tabela~\ref{tab:smote1f1} apresenta os resultados obtidos utilizando o F1 Score como função de aptidão do GA, com SMOTE-NC e CV estratificada. Os valores de aptidão foram: Linear = 55,44\%; Radial $\gamma{=}0{,}001$ = 52,49\%; Radial $\gamma{=}0{,}01$ = 57,90\%; Radial $\gamma{=}0{,}1$ = 65,49\%; Radial $\gamma{=}1{,}0$ = 58,01\%.}
+
+\begin{table}[ht]
+\centering
+\caption{\novo{SMS Completo --- Base 1 Desbalanceada, SMOTE-NC, F1 Score como Aptidão do GA \novo{(Novo experimento: SMOTE-NC + CV Estratificada)}}}
+\label{tab:smote1f1}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \novo{\textbf{SNPs selecionados}} & \novo{\textbf{\# SNPs (V)}} & \novo{\textbf{Fitness (F1\%)}} & \novo{\textbf{Prec.\ (\%)}} & \novo{\textbf{Sens.\ (\%)}} & \novo{\textbf{F1\ Var.\ (\%)}} \\
+\hline
+\multicolumn{2}{l|}{\novo{SNPs causais}} & \novo{---} &
+  \novo{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8}} & \novo{---} & \novo{---} & \novo{---} & \novo{---} & \novo{---} \\
+\hline
+\novo{SMS} & \novo{Linear} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               20,24,36,50,59,68,71,\\
+               76}} &
+  \novo{15 (7)} & \novo{55,44} & \novo{46,7} & \novo{87,5} & \novo{60,9} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,001} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{7},\textbf{8},11,\\
+               20,36,50,59,60,65,76,\\
+               92}} &
+  \novo{15 (6)} & \novo{52,49} & \novo{40,0} & \novo{75,0} & \novo{52,2} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,01} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},36,\\
+               65,68,76,92}} &
+  \novo{11 (6)} & \novo{57,90} & \novo{54,5} & \novo{75,0} & \novo{63,2} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,1} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{5},\textbf{7},\textbf{8},11,\\
+               24}} &
+  \novo{8 (6)} & \novo{65,49} & \novo{75,0} & \novo{75,0} & \novo{75,0} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{1,0} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{7},\textbf{8},59}} &
+  \novo{5 (4)} & \novo{58,01} & \novo{80,0} & \novo{50,0} & \novo{61,5} \\
+\hline
+\multicolumn{2}{l|}{\novo{União}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               11,20,24,\\
+               36,50,59,60,65,68,71,\\
+               76,92}} &
+  \novo{19 (7)} & \novo{---} & \novo{36,8} & \novo{87,5} & \novo{51,9} \\
+\hline
+\multicolumn{2}{l|}{\novo{Interseção}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{7},\textbf{8}}} &
+  \novo{4 (4)} & \novo{---} & \novo{100,0} & \novo{50,0} & \novo{66,7} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ bruto}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               27,28,42,89}} &
+  \novo{11 (7)} & \novo{---} & \novo{63,6} & \novo{87,5} & \novo{73,7} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ corrigido}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{4},\textbf{7},\textbf{8}}} &
+  \novo{5 (5)} & \novo{---} & \novo{100,0} & \novo{62,5} & \novo{76,9} \\
+\hline
+\end{tabular}
+\end{table}
+
+\novo{A otimização pelo F1 Score produziu resultados notavelmente mais parcimoniosos em comparação à otimização por acurácia. O kernel Linear selecionou 15 SNPs (7 causais, ausente: SNP6), com fitness F1 de 55,44\%. Para $\gamma = 0{,}001$, o método selecionou 15 SNPs com 6 causais (ausentes: SNP5 e SNP6), com fitness de 52,49\%. Esse resultado é radicalmente diferente do obtido com acurácia (99 SNPs), demonstrando que o F1 Score penaliza fortemente modelos que simplesmente maximizam a classe majoritária, forçando o GA a encontrar soluções com melhor equilíbrio entre precisão e revocação.}
+
+\novo{Para $\gamma = 0{,}01$, o método selecionou 11 SNPs com 6 causais (ausentes: SNP3 e SNP6), fitness F1 de 57,90\%. Para $\gamma = 0{,}1$, a configuração mais eficiente, foram selecionados apenas 8 SNPs com 6 causais (ausentes: SNP3 e SNP6), com fitness F1 de 65,49\%. Esse resultado demonstra excelente parcimônia, sendo o conjunto selecionado mais compacto de todos os métodos SMS avaliados neste relatório. Para $\gamma = 1{,}0$, o método selecionou apenas 5 SNPs com 4 causais, indicando que valores muito elevados de $\gamma$ tornam o modelo excessivamente restritivo mesmo quando otimizado por F1.}
+
+\novo{A União resultou em 19 SNPs com 7 causais (ausente: SNP6), e a Interseção em 4 SNPs todos causais (1, 2, 7, 8), demonstrando que esses quatro marcadores são robustamente identificados por todas as configurações. Comparando os dois experimentos de SMOTE-NC (Acurácia vs.\ F1), observa-se que a otimização por F1 Score gerou conjuntos menores e com melhor razão causais/total, confirmando sua superioridade para dados desbalanceados em termos de eficiência biológica da seleção.}
+
+% =============================================================
+\section{\novo{Base de Dados 2 --- Efeitos em Grupos com Interações}}
+% =============================================================
+
+\novo{A Base de Dados 2 foi simulada com uma estrutura genética mais complexa, envolvendo SNPs causais organizados em grupos com interações epistáticas. Esse cenário exige modelos capazes de capturar dependências não lineares entre marcadores, favorecendo kernels Radiais com parâmetros ajustados para maior flexibilidade.}
+
+
+\novo{
+\textbf{Análise das métricas F1 Var., Precisão e Sensibilidade dos SNPs:} Considerando o equilíbrio entre a pureza (Prec.) e a cobertura (Sens.) dos SNPs causais, o SMS Radial $\gamma={0,1}$ destacou-se como o método SMS com melhor F1 Var. = 75,0\% (Prec.\ = 75,0\%, Sens.\ = 75,0\%). Em contrapartida, o SMS Radial $\gamma={0,001}$ obteve o menor F1 Var. entre as configurações SMS (52,2\%), reflexo de alta Sens.\ com baixa Prec. O método Interseção, com Prec.\ = 100,0\% e Sens.\ = 50,0\%, obteve F1 Var. = 66,7\%, abaixo do melhor SMS em termos de F1. Em síntese, o F1 Var. evidencia que métodos extremamente conservadores (alta Prec., baixa Sens.) e métodos excessivamente inclusivos (alta Sens., baixa Prec.) são penalizados igualmente, favorecendo configurações intermediárias que equilibram as duas dimensões.
+}
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=1{,}0$ destacou-se como o melhor método SMS com F1 Var.\ = 66,7\% (Prec.\ = 60,0\%, Sens.\ = 75,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (13,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 66,7\%) é superior ao melhor SMS em F1, com Prec.\ = 71,4\% e Sens.\ = 62,5\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (62,5\%) reduz o F1 Var.\ para 76,9\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 8,0\%, resultando em F1 Var.\ = 14,8\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 2 --- Balanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 2 --- Base Balanceada (50\%/50\%)}
+\label{tab:t3}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               19,27,38,59,71,89,99} &
+  14 (6) & 76,30 & 42,9 & 75,0 & 54,5 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},11,16,\\
+               19,20,27,37,38,43,46,\\
+               50,53,54,\\
+               56,59,70,71,73,79,82,\\
+               89,92,99} &
+  30 (8) & 74,90 & 26,7 & 100,0 & 42,1 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},11,54,\\
+               59,64,71,92,99} &
+  12 (5) & 77,10 & 41,7 & 62,5 & 50,0 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               19,27,43,64,76,99} &
+  13 (6) & 79,90 & 46,2 & 75,0 & 57,1 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{8},37} &
+  5 (4) & 77,40 & 80,0 & 50,0 & 61,5 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},11,16,\\
+               19,20,27,37,38,43,46,\\
+               50,53,54,\\
+               56,59,64,70,71,73,76,\\
+               79,82,89,\\
+               92,99} &
+  32 (8) & --- & 25,0 & 100,0 & 40,0 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3}} &
+  3 (3) & --- & 100,0 & 37,5 & 54,5 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               42,43,74,89} &
+  11 (6) & --- & 54,5 & 75,0 & 63,2 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},11} &
+  4 (3) & --- & 75,0 & 37,5 & 50,0 \\
+\hline
+\end{tabular}
+\end{table}
+
+Observa-se que o método SMS com kernel Radial e $\gamma = 0{,}001$ recuperou todos os oito SNPs causais, atingindo 100\% de recuperação. Resultado semelhante foi obtido pelo método de União, que também identificou os oito SNPs verdadeiramente relevantes. Contudo, ambos os métodos selecionaram um número elevado de SNPs totais (30 e 32, respectivamente), indicando menor parcimônia e maior inclusão de variáveis potencialmente irrelevantes. Esse comportamento sugere alta sensibilidade, porém com aumento do risco de falsos positivos.
+
+O SMS com kernel Linear recuperou seis dos oito SNPs causais, selecionando 14 variáveis no total. Desempenho semelhante foi observado para o SMS com kernel Radial e $\gamma = 0{,}1$, que também recuperou seis SNPs causais, com seleção total de 13 variáveis. O método baseado em valor-$p$ bruto apresentou resultado equivalente, identificando igualmente seis SNPs causais entre 11 selecionados. Esses métodos demonstram um equilíbrio mais adequado entre sensibilidade e parcimônia, recuperando a maior parte do sinal biológico sem expansão excessiva do conjunto de variáveis.
+
+Por sua vez, o SMS com kernel Radial e $\gamma = 0{,}01$ recuperou cinco SNPs causais, selecionando 12 variáveis. Já o modelo com $\gamma = 1{,}0$ apresentou comportamento mais restritivo, recuperando apenas quatro SNPs causais entre cinco selecionados. Esse padrão indica que valores mais elevados do parâmetro $\gamma$ tornam o modelo mais rígido, reduzindo a capacidade de capturar o sinal biológico completo.
+
+Os métodos mais conservadores foram a Interseção e o valor-$p$ corrigido, ambos recuperando apenas três SNPs causais. Embora apresentem alta especificidade e forte redução dimensional, esses métodos demonstram perda substancial de informação relevante, o que pode comprometer a interpretação biológica dos resultados.
+
+Portanto, considerando exclusivamente a recuperação dos SNPs verdadeiramente relevantes, o método SMS com kernel Radial e $\gamma = 0{,}001$ apresenta maior sensibilidade. Contudo, quando se considera simultaneamente a necessidade de parcimônia e redução de falsos positivos, os modelos SMS Linear e Radial com $\gamma = 0{,}1$ demonstram desempenho mais equilibrado.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=1{,}0$ destacou-se como o melhor método SMS com F1 Var.\ = 61,5\% (Prec.\ = 80,0\%, Sens.\ = 50,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (42,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 54,5\%) é inferior ao melhor SMS em F1, com Prec.\ = 100,0\% e Sens.\ = 37,5\%. O Valor-$p$ corrigido obteve F1 Var.\ = 50,0\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 25,0\%, resultando em F1 Var.\ = 40,0\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 2 --- Desbalanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 2 --- Base Desbalanceada (80\%/20\%)}
+\label{tab:t4}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,11,\\
+               14,25,28,36,37,55,60,\\
+               61,62,77,92} &
+  21 (8) & 83,00 & 38,1 & 100,0 & 55,2 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{3},\textbf{8},14,21,25,28,36,\\
+               60,77,87,88} &
+  11 (2) & 80,00 & 18,2 & 25,0 & 21,1 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{8},\\
+               9,12,13,\\
+               16,20,22,23,25,26,27,\\
+               28,31,34,\\
+               36,37,38,39,40,41,43,\\
+               48,54,55,\\
+               56,58,60,61,62,64,68,\\
+               69,76,77,\\
+               79,82,83,85,86,88,91,\\
+               95,97,99,100} &
+  51 (7) & 81,00 & 13,7 & 87,5 & 23,7 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},21,77,88} &
+  11 (8) & 87,10 & 72,7 & 100,0 & 84,2 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{3},\textbf{7},\textbf{8},11,14,21,\\
+               36,38,60,77,92,93} &
+  13 (4) & 80,80 & 30,8 & 50,0 & 38,1 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  58 SNPs (todos os causais incluídos; união de todas as seleções acima) &
+  58 (8) & --- & 13,8 & 100,0 & 24,2 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{3},\textbf{8},77} &
+  3 (2) & --- & 66,7 & 25,0 & 36,4 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},49,\\
+               62,77,83,88,89} &
+  12 (6) & --- & 50,0 & 75,0 & 60,0 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8}} &
+  6 (6) & --- & 100,0 & 75,0 & 85,7 \\
+\hline
+\end{tabular}
+\end{table}
+
+Verifica-se que o método SMS com kernel Linear recuperou todos os oito SNPs causais, com um total de 21 SNPs selecionados. Esse resultado indica elevada sensibilidade do modelo para detectar a estrutura genética subjacente ao fenômeno, ainda que com inclusão adicional de variáveis não causais.
+
+Entre os modelos com kernel Radial, o comportamento variou conforme o parâmetro $\gamma$. O modelo com $\gamma = 0{,}01$ apresentou desempenho expressivo, recuperando sete dos oito SNPs causais, embora tenha selecionado 51 variáveis no total. Esse cenário evidencia forte capacidade de detecção do efeito genético real, porém com baixa restrição na etapa de seleção.
+
+Já o modelo com $\gamma = 0{,}1$ também demonstrou desempenho robusto, recuperando todos os oito SNPs causais com apenas 11 variáveis selecionadas. Esse resultado sugere melhor equilíbrio entre abrangência e seletividade, indicando que, para a base desbalanceada, esse valor de $\gamma$ favoreceu simultaneamente a recuperação integral das variáveis relevantes e maior parcimônia.
+
+O modelo com $\gamma = 0{,}001$ apresentou comportamento mais conservador, recuperando apenas dois SNPs causais, enquanto o modelo com $\gamma = 1{,}0$ identificou quatro dos oito SNPs relevantes. Esses resultados indicam que valores extremos do parâmetro $\gamma$ podem comprometer a capacidade de capturar adequadamente os efeitos genéticos verdadeiros.
+
+O método de União recuperou integralmente os oito SNPs causais, porém com seleção total de 58 variáveis. Embora maximize a sensibilidade, esse procedimento amplia significativamente a inclusão de variáveis irrelevantes, reduzindo a eficiência interpretativa do modelo.
+
+Por outro lado, o método de Interseção apresentou perfil altamente restritivo, recuperando apenas três SNPs causais. Resultado semelhante foi observado no método baseado em valor-$p$ bruto, que recuperou seis SNPs, e no valor-$p$ corrigido, que identificou seis dos oito SNPs causais, com menor número total de variáveis selecionadas. Esses métodos demonstram maior controle sobre a dimensionalidade, ainda que à custa de possível perda parcial de informação genética relevante.
+
+Assim, o método SMS com kernel Radial e parâmetro $\gamma = 0{,}1$ demonstrou desempenho superior na base desbalanceada. Esse modelo foi capaz de identificar integralmente os SNPs causais, mantendo simultaneamente um número reduzido de variáveis selecionadas, o que evidencia maior equilíbrio entre sensibilidade e parcimônia. Tal resultado indica que a parametrização adequada do kernel Radial exerce papel determinante na captação da estrutura genética relevante, tornando o SMS Radial com $\gamma = 0{,}1$ o procedimento mais eficaz dentre os métodos avaliados para esse cenário experimental.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}1$ destacou-se como o melhor método SMS com F1 Var.\ = 84,2\% (Prec.\ = 72,7\%, Sens.\ = 100,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (21,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 36,4\%) é inferior ao melhor SMS em F1, com Prec.\ = 66,7\% e Sens.\ = 25,0\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (75,0\%) reduz o F1 Var.\ para 85,7\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 13,8\%, resultando em F1 Var.\ = 24,2\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 2 --- Base Balanceada, Validação Balanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 2 --- Base Balanceada, Validação Balanceada}
+\label{tab:t9}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{5},\textbf{8},19,37,\\
+               59,71} &
+  9 (5) & 76,50 & 55,6 & 62,5 & 58,8 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},11,16,\\
+               20,24,27,31,32,43,53,\\
+               54,59,64,\\
+               76,78,82,87,89,92,97,99} &
+  28 (8) & 76,40 & 28,6 & 100,0 & 44,4 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{8},\\
+               19,24,27,\\
+               31,38,43,54,71,79,89,\\
+               92,97,99} &
+  20 (7) & 78,50 & 35,0 & 87,5 & 50,0 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               16,27,37,54,59,89,92,\\
+               99} &
+  15 (6) & 80,90 & 40,0 & 75,0 & 52,2 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{5},27,59} &
+  6 (4) & 77,60 & 66,7 & 50,0 & 57,1 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},11,16,\\
+               19,20,24,27,31,32,37,\\
+               38,43,53,\\
+               54,59,64,71,76,78,79,\\
+               82,87,89,\\
+               92,97,99} &
+  33 (8) & --- & 24,2 & 100,0 & 39,0 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{5}} &
+  4 (4) & --- & 100,0 & 50,0 & 66,7 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               42,43,74,89} &
+  11 (6) & --- & 54,5 & 75,0 & 63,2 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},11} &
+  4 (3) & --- & 75,0 & 37,5 & 50,0 \\
+\hline
+\end{tabular}
+\end{table}
+
+O método SMS com kernel Linear selecionou um conjunto reduzido de 9 SNPs, incluindo 5 SNPs causais, indicando uma abordagem mais restritiva, porém com perda de parte das variáveis verdadeiramente associadas. Ao analisar o kernel Radial com $\gamma = 0{,}001$, observa-se a seleção de um conjunto mais amplo, 28 SNPs, contendo todos os SNPs causais. Esse comportamento demonstra alta capacidade de recuperação, porém com inclusão de um número elevado de SNPs não causais. Para $\gamma = 0{,}01$, o método selecionou 20 SNPs, incluindo 7 SNPs causais, o que indica um melhor equilíbrio em relação ao caso anterior. Há uma redução no número total de variáveis selecionadas, mantendo ainda uma boa recuperação dos SNPs relevantes. Já para $\gamma = 0{,}1$, observa-se uma seleção ainda mais refinada, 15 SNPs, sendo 6 causais, indicando um comportamento mais equilibrado entre inclusão de SNPs relevantes e exclusão de variáveis irrelevantes. Quando $\gamma = 1{,}0$, o modelo se torna mais restritivo, selecionando apenas 6 SNPs, dos quais 4 são causais, evidenciando perda significativa de SNPs relevantes, possivelmente associada a um ajuste excessivamente específico. Os métodos de União e Interseção apresentam comportamentos distintos. A União selecionou 33 SNPs, incluindo todos os causais, caracterizando alta sensibilidade, porém com grande quantidade de falsos positivos. Em contrapartida, a Interseção selecionou apenas 4 SNPs, todos causais, indicando alta precisão, porém com perda relevante de variáveis importantes.
+
+Em relação aos métodos estatísticos, o valor-$p$ bruto selecionou 11 SNPs, incluindo 6 SNPs causais, demonstrando boa capacidade de recuperação com quantidade moderada de variáveis irrelevantes. Já o valor-$p$ corrigido apresentou uma seleção mais conservadora, 4 SNPs, sendo 3 causais, evidenciando maior rigor na filtragem, porém com perda de parte dos SNPs relevantes.
+
+O kernel Radial com $\gamma = 0{,}01$ apresentou o melhor equilíbrio entre recuperação dos SNPs causais e controle de variáveis irrelevantes, destacando-se como a configuração mais adequada para a base de dados balanceada.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Linear destacou-se como o melhor método SMS com F1 Var.\ = 58,8\% (Prec.\ = 55,6\%, Sens.\ = 62,5\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (44,4\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 66,7\%) é superior ao melhor SMS em F1, com Prec.\ = 100,0\% e Sens.\ = 50,0\%. O Valor-$p$ corrigido obteve F1 Var.\ = 50,0\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 24,2\%, resultando em F1 Var.\ = 39,0\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 2 --- Base Balanceada, Validação Desbalanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 2 --- Base Balanceada, Validação Desbalanceada
+         (mesma seleção de SNPs da Tabela~\ref{tab:t3})}
+\label{tab:t10}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               19,27,38,59,71,89,99} &
+  14 (6) & 76,30 & 42,9 & 75,0 & 54,5 \\
+\hline
+SMS & Radial & 0,001 &
+  30 SNPs (todos os 8 causais incluídos; mesma lista da Tabela~\ref{tab:t3}) &
+  30 (8) & 74,90 & 26,7 & 100,0 & 42,1 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},11,54,\\
+               59,64,71,92,99} &
+  12 (5) & 77,10 & 41,7 & 62,5 & 50,0 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               19,27,43,64,76,99} &
+  13 (6) & 79,90 & 46,2 & 75,0 & 57,1 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{8},37} &
+  5 (4) & 77,40 & 80,0 & 50,0 & 61,5 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  32 SNPs (todos os causais incluídos) &
+  32 (8) & --- & 25,0 & 100,0 & 40,0 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3}} &
+  3 (3) & --- & 100,0 & 37,5 & 54,5 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},11,\\
+               42,43,74,89} &
+  11 (6) & --- & 54,5 & 75,0 & 63,2 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},11} &
+  4 (3) & --- & 75,0 & 37,5 & 50,0 \\
+\hline
+\end{tabular}
+\end{table}
+
+O método SMS com kernel Linear selecionou 14 SNPs, incluindo 6 SNPs causais, demonstrando capacidade moderada de recuperação, porém ainda com perda de parte das variáveis verdadeiramente associadas.
+
+Ao analisar o kernel Radial com $\gamma = 0{,}001$, observa-se a seleção de um conjunto bastante amplo (30 SNPs), contendo todos os SNPs causais. Apesar da recuperação completa das variáveis relevantes, o método apresenta elevado número de falsos positivos, indicando baixa capacidade de filtragem. Para $\gamma = 0{,}01$, o método selecionou 12 SNPs, incluindo 5 SNPs causais, evidenciando uma seleção mais restritiva. Embora tenha reduzido significativamente o número de variáveis irrelevantes, houve também perda de parte dos SNPs verdadeiramente associados.
+
+Já para $\gamma = 0{,}1$, observa-se uma seleção intermediária (13 SNPs, sendo 6 causais), indicando um equilíbrio mais consistente entre recuperação dos SNPs relevantes e controle de variáveis irrelevantes. Quando $\gamma = 1{,}0$, o modelo se torna ainda mais restritivo, selecionando apenas 5 SNPs, dos quais 4 são causais, evidenciando perda significativa de SNPs relevantes e redução excessiva do conjunto selecionado.
+
+Os métodos de União e Interseção mantêm comportamentos opostos. A União selecionou 32 SNPs, incluindo todos os SNPs causais, demonstrando alta sensibilidade, porém acompanhada de muitos falsos positivos. Em contrapartida, a Interseção selecionou apenas 3 SNPs, todos causais, caracterizando alta precisão, porém com perda expressiva de informação relevante.
+
+Em relação aos métodos estatísticos, o valor-$p$ bruto selecionou 11 SNPs, incluindo 6 SNPs causais, apresentando comportamento intermediário entre recuperação e filtragem. Já o valor-$p$ corrigido selecionou apenas 4 SNPs, sendo 3 causais, demonstrando novamente um comportamento mais conservador.
+
+De forma geral, o método baseado em valor-$p$ bruto apresentou o desempenho mais consistente para a base de dados 2 balanceada, pois conseguiu recuperar uma quantidade relevante de SNPs causais utilizando um conjunto reduzido de variáveis. Comparado aos métodos baseados em SVM, apresentou melhor equilíbrio entre recuperação de SNPs relevantes e redução de falsos positivos, evidenciando maior eficiência na seleção das variáveis associadas.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=1{,}0$ destacou-se como o melhor método SMS com F1 Var.\ = 61,5\% (Prec.\ = 80,0\%, Sens.\ = 50,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (42,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 54,5\%) é inferior ao melhor SMS em F1, com Prec.\ = 100,0\% e Sens.\ = 37,5\%. O Valor-$p$ corrigido obteve F1 Var.\ = 50,0\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 25,0\%, resultando em F1 Var.\ = 40,0\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 2 --- Base Desbalanceada, Validação Desbalanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 2 --- Base Desbalanceada, Validação Desbalanceada
+         (mesma seleção de SNPs da Tabela~\ref{tab:t4})}
+\label{tab:t11}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,11,\\
+               14,25,28,36,37,55,60,\\
+               61,62,77,92} &
+  21 (8) & 83,00 & 38,1 & 100,0 & 55,2 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{3},\textbf{8},14,21,25,28,36,\\
+               60,77,87,88} &
+  11 (2) & 80,00 & 18,2 & 25,0 & 21,1 \\
+\hline
+SMS & Radial & 0,01 &
+  51 SNPs (SNPs causais 1--7 incluídos, ausente SNP7; mesma lista da Tabela~\ref{tab:t4}) &
+  51 (7) & 81,00 & 13,7 & 87,5 & 23,7 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},21,77,88} &
+  11 (8) & 87,10 & 72,7 & 100,0 & 84,2 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{1},\textbf{3},\textbf{7},\textbf{8},11,14,21,\\
+               36,38,60,77,92,93} &
+  13 (4) & 80,80 & 30,8 & 50,0 & 38,1 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  58 SNPs (todos os causais incluídos) &
+  58 (8) & --- & 13,8 & 100,0 & 24,2 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{3},\textbf{8},77} &
+  3 (2) & --- & 66,7 & 25,0 & 36,4 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},49,\\
+               62,77,83,88,89} &
+  12 (6) & --- & 50,0 & 75,0 & 60,0 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8}} &
+  6 (6) & --- & 100,0 & 75,0 & 85,7 \\
+\hline
+\end{tabular}
+\end{table}
+
+O método SMS com kernel Linear selecionou 21 SNPs, incluindo todos os 8 SNPs causais, demonstrando alta capacidade de recuperação. Entretanto, o número elevado de variáveis adicionais indica baixa capacidade de filtragem, resultando em maior presença de ruído.
+
+Ao analisar o kernel Radial com $\gamma = 0{,}001$, observa-se uma seleção mais restrita, 11 SNPs, contendo apenas 2 SNPs causais. Esse comportamento evidencia perda significativa de variáveis relevantes, indicando que valores muito baixos de $\gamma$ podem limitar excessivamente a capacidade de identificação dos SNPs associados.
+
+Para $\gamma = 0{,}01$, o método apresentou a maior quantidade de SNPs selecionados, 51 SNPs, recuperando 7 dos SNPs causais. Apesar da elevada sensibilidade, houve inclusão excessiva de variáveis irrelevantes, caracterizando um modelo pouco eficiente na filtragem.
+
+Já para $\gamma = 0{,}1$, observa-se uma seleção muito mais equilibrada (11 SNPs, sendo 8 causais), indicando excelente capacidade de recuperação dos SNPs relevantes com baixa inclusão de falsos positivos.
+
+Quando $\gamma = 1{,}0$, o modelo torna-se mais restritivo, selecionando 13 SNPs, dos quais 4 são causais, evidenciando perda considerável de variáveis relevantes.
+
+Os métodos de União e Interseção mantêm o comportamento observado nas demais tabelas. A União selecionou um conjunto extremamente amplo (58 SNPs), incluindo todos os causais, porém com elevada quantidade de falsos positivos. Em contrapartida, a Interseção selecionou apenas 3 SNPs, sendo 2 causais, caracterizando um método excessivamente restritivo.
+
+O valor-$p$ bruto selecionou 12 SNPs, incluindo 6 SNPs causais, demonstrando comportamento intermediário entre recuperação e filtragem. Já o valor-$p$ corrigido selecionou apenas 6 SNPs, todos causais, apresentando alta precisão e ausência de falsos positivos, porém com perda de parte das variáveis relevantes.
+
+De forma geral, o método que apresentou o melhor desempenho para a base de dados 2 desbalanceada foi o SMS com kernel Radial e $\gamma = 0{,}1$. Essa configuração conseguiu recuperar todos os SNPs causais utilizando um conjunto reduzido de variáveis, demonstrando melhor equilíbrio entre identificação de SNPs relevantes e controle de falsos positivos.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}1$ destacou-se como o melhor método SMS com F1 Var.\ = 84,2\% (Prec.\ = 72,7\%, Sens.\ = 100,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (21,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 36,4\%) é inferior ao melhor SMS em F1, com Prec.\ = 66,7\% e Sens.\ = 25,0\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (75,0\%) reduz o F1 Var.\ para 85,7\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 13,8\%, resultando em F1 Var.\ = 24,2\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{SMS Completo --- Acurácia 2 --- Base Desbalanceada, Validação Balanceada}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{SMS Completo --- Acurácia 2 --- Base Desbalanceada, Validação Balanceada}
+\label{tab:t12}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \textbf{SNPs selecionados} & \textbf{\# SNPs (V)} & \textbf{Ac.\ Obs.} & \textbf{Prec.\ (\%)} & \textbf{Sens.\ (\%)} & \textbf{F1\ Var.\ (\%)} \\
+\hline
+\multicolumn{2}{l|}{SNPs causais} & --- &
+  \textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8} & --- & --- & --- & --- & --- \\
+\hline
+SMS & Linear & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},25,27,\\
+               36,39,60,61,62,77,87,\\
+               88,92} &
+  19 (8) & 83,70 & 42,1 & 100,0 & 59,3 \\
+\hline
+SMS & Radial & 0,001 &
+  \makecell[l]{\textbf{3},\textbf{8},14,21,25,28,36,\\
+               60,77,87,88} &
+  11 (2) & 80,00 & 18,2 & 25,0 & 21,1 \\
+\hline
+SMS & Radial & 0,01 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{8},\\
+               11,12,14,\\
+               19,21,27,28,31,34,36,\\
+               37,38,39,\\
+               55,57,58,59,60,61,62,\\
+               69,77,83,\\
+               84,87,88,89,91,92,93,\\
+               95,99,100} &
+  40 (7) & 81,20 & 17,5 & 87,5 & 29,2 \\
+\hline
+SMS & Radial & 0,1 &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},14,21,92} &
+  11 (8) & 88,20 & 72,7 & 100,0 & 84,2 \\
+\hline
+SMS & Radial & 1,0 &
+  \makecell[l]{\textbf{7},\textbf{8},21,77} &
+  4 (2) & 83,20 & 50,0 & 25,0 & 33,3 \\
+\hline
+\multicolumn{2}{l|}{União} & --- &
+  42 SNPs (todos os causais incluídos) &
+  42 (8) & --- & 19,0 & 100,0 & 32,0 \\
+\hline
+\multicolumn{2}{l|}{Interseção} & --- &
+  \makecell[l]{\textbf{8}} &
+  1 (1) & --- & 100,0 & 12,5 & 22,2 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ bruto} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},49,\\
+               62,77,83,88,89} &
+  12 (6) & --- & 50,0 & 75,0 & 60,0 \\
+\hline
+\multicolumn{2}{l|}{Valor-$p$ corrigido} & --- &
+  \makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8}} &
+  6 (6) & --- & 100,0 & 75,0 & 85,7 \\
+\hline
+\end{tabular}
+\end{table}
+
+O método SMS com kernel Linear selecionou 19 SNPs, incluindo todos os 8 SNPs causais, demonstrando elevada capacidade de recuperação. Entretanto, o conjunto relativamente amplo de variáveis selecionadas indica maior presença de SNPs irrelevantes, evidenciando baixa capacidade de filtragem.
+
+Ao analisar o kernel Radial com $\gamma = 0{,}001$, observa-se uma seleção mais restritiva (11 SNPs), contendo apenas 2 SNPs causais. Esse resultado demonstra perda significativa de variáveis relevantes, sugerindo que valores muito baixos de $\gamma$ podem limitar a capacidade do modelo de capturar adequadamente os padrões associados aos SNPs causais.
+
+Para $\gamma = 0{,}01$, o método selecionou 40 SNPs, incluindo 7 SNPs causais, apresentando elevada sensibilidade, porém acompanhado de grande quantidade de falsos positivos. Esse comportamento indica excesso de variáveis irrelevantes no conjunto selecionado.
+
+Já para $\gamma = 0{,}1$, observa-se uma seleção bastante equilibrada (11 SNPs, sendo 8 causais), demonstrando excelente capacidade de recuperação dos SNPs relevantes com reduzida inclusão de variáveis irrelevantes.
+
+Quando $\gamma = 1{,}0$, o modelo torna-se excessivamente restritivo, selecionando apenas 4 SNPs, dos quais 2 são causais, evidenciando perda considerável de informação relevante.
+
+A União selecionou um conjunto amplo (42 SNPs), incluindo todos os SNPs causais, porém com elevado número de falsos positivos. Em contrapartida, a Interseção selecionou apenas 1 SNP, que era causal, caracterizando um método extremamente conservador e com elevada perda de informação.
+
+O valor-$p$ bruto selecionou 12 SNPs, incluindo 6 SNPs causais, demonstrando comportamento intermediário entre recuperação e filtragem. Já o valor-$p$ corrigido selecionou 6 SNPs, todos causais, indicando alta precisão e ausência de falsos positivos, porém com perda de parte dos SNPs relevantes.
+
+De forma geral, o método que apresentou o melhor desempenho para esta base de dados foi o SMS com kernel Radial e $\gamma = 0{,}1$. Essa configuração conseguiu recuperar todos os SNPs causais utilizando um conjunto reduzido de variáveis selecionadas, demonstrando excelente equilíbrio entre identificação de SNPs relevantes e controle de falsos positivos.
+
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=0{,}1$ destacou-se como o melhor método SMS com F1 Var.\ = 84,2\% (Prec.\ = 72,7\%, Sens.\ = 100,0\%). O SMS Radial $\gamma=0{,}001$ apresentou o menor F1 Var.\ entre os SMS (21,1\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 22,2\%) é inferior ao melhor SMS em F1, com Prec.\ = 100,0\% e Sens.\ = 12,5\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (75,0\%) reduz o F1 Var.\ para 85,7\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 19,0\%, resultando em F1 Var.\ = 32,0\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}
+% ---------------------------------------------------------------
+\subsection{\novo{SMS Completo --- Base 2 Desbalanceada com CV Estratificada e SMOTE-NC}}
+% ---------------------------------------------------------------
+
+\novo{Esta subseção apresenta os resultados do novo experimento para a Base de Dados 2 Desbalanceada, aplicando SMOTE-NC e validação cruzada estratificada de 10 partições.}
+
+\subsubsection{\novo{Acurácia como Função de Aptidão do GA}}
+
+\novo{Os valores de aptidão do GA foram: Linear = 76,40\%; Radial $\gamma{=}0{,}001$ = 76,30\%; Radial $\gamma{=}0{,}01$ = 81,50\%; Radial $\gamma{=}0{,}1$ = 84,80\%; Radial $\gamma{=}1{,}0$ = 80,60\%.}
+
+
+\footnotesize
+\begin{longtable}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\caption{\novo{SMS Completo --- Base 2 Desbalanceada, SMOTE-NC, Acurácia como Aptidão do GA \novo{(Novo experimento: SMOTE-NC + CV Estratificada)}}} \label{tab:smote2acc} \\
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \novo{\textbf{SNPs selecionados}} & \novo{\textbf{\# SNPs (V)}} & \novo{\textbf{Fitness GA}} & \novo{\textbf{Prec.\ (\%)}} & \novo{\textbf{Sens.\ (\%)}} & \novo{\textbf{F1\ Var.\ (\%)}} \\
+\hline
+\endfirsthead
+\multicolumn{9}{l}{\footnotesize \novo{(continuação da Tabela~\ref{tab:smote2acc})}} \\
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \novo{\textbf{SNPs selecionados}} & \novo{\textbf{\# SNPs (V)}} & \novo{\textbf{Fitness GA}} & \novo{\textbf{Prec.\ (\%)}} & \novo{\textbf{Sens.\ (\%)}} & \novo{\textbf{F1\ Var.\ (\%)}} \\
+\hline
+\endhead
+\multicolumn{9}{r}{\footnotesize \textit{(continua...)}} \\
+\endfoot
+\hline
+\endlastfoot
+\multicolumn{2}{l|}{\novo{SNPs causais}} & \novo{---} &
+  \novo{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8}} & \novo{---} & \novo{---} & \novo{---} & \novo{---} & \novo{---} \\
+\hline
+\novo{SMS} & \novo{Linear} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{5},\textbf{7},\textbf{8},12,\\
+               13,15,19,\\
+               20,22,25,26,27,28,30,\\
+               33,40,53,\\
+               54,55,57,58,61,64,66,\\
+               68,69,71,\\
+               74,76,77,80,82,83,84,\\
+               88,90,91,\\
+               92,98,100}} &
+  \novo{43 (6)} & \novo{76,40} & \novo{14,0} & \novo{75,0} & \novo{23,5} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,001} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,11,\\
+               13,14,15,16,19,21,25,\\
+               27,28,29,\\
+               31,33,34,36,38,39,40,\\
+               43,52,54,\\
+               60,61,62,63,64,65,66,\\
+               68,69,75,\\
+               76,77,79,83,85,87,88,\\
+               89,90,91,\\
+               92,97,98}} &
+  \novo{53 (8)} & \novo{76,30} & \novo{15,1} & \novo{100,0} & \novo{26,2} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,01} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},9,11,\\
+               12,14,15,20,21,22,24,\\
+               25,27,28,\\
+               29,31,33,34,36,37,38,\\
+               39,40,43,\\
+               48,50,55,57,58,59,60,\\
+               61,62,63,\\
+               64,65,67,68,69,71,72,\\
+               76,77,79,\\
+               82,83,86,87,88,89,90,\\
+               91,92,93,\\
+               95,98,99,100}} &
+  \novo{67 (8)} & \novo{81,50} & \novo{11,9} & \novo{100,0} & \novo{21,3} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,1} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},21,\\
+               27,28,34,61,62,76,87,\\
+               88,93}} &
+  \novo{16 (6)} & \novo{84,80} & \novo{37,5} & \novo{75,0} & \novo{50,0} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{1,0} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},14,\\
+               60,88}} &
+  \novo{9 (6)} & \novo{80,60} & \novo{66,7} & \novo{75,0} & \novo{70,6} \\
+\hline
+\multicolumn{2}{l|}{\novo{União}} & \novo{---} &
+  \novo{81 SNPs (todos os causais incluídos; lista completa é a união das seleções acima)} &
+  \novo{81 (8)} & \novo{---} & \novo{9,9} & \novo{100,0} & \novo{18,0} \\
+\hline
+\multicolumn{2}{l|}{\novo{Interseção}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{5},\textbf{7},88}} &
+  \novo{6 (5)} & \novo{---} & \novo{83,3} & \novo{62,5} & \novo{71,4} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ bruto}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},49,\\
+               62,77,83,88,89}} &
+  \novo{12 (6)} & \novo{---} & \novo{50,0} & \novo{75,0} & \novo{60,0} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ corrigido}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8}}} &
+  \novo{6 (6)} & \novo{---} & \novo{100,0} & \novo{75,0} & \novo{85,7} \\
+\hline
+\end{longtable}
+
+
+
+\novo{Para a Base 2 com SMOTE-NC e acurácia como aptidão, o kernel Linear selecionou 43 SNPs com 6 causais (ausentes: SNP4 e SNP6), refletindo comportamento similar ao observado na Base 1 desbalanceada sem SMOTE, porém com ligeiramente melhor fitness (76,40\%). A recuperação parcial dos causais indica que o SMOTE-NC não eliminou completamente o viés de classe para o kernel Linear na Base 2, provavelmente em função da maior complexidade epistática desta simulação.}
+
+\novo{O Radial com $\gamma = 0{,}001$ recuperou todos os 8 causais em 53 SNPs, com fitness 76,30\%, desempenho muito diferente do equivalente na Base 1 (onde 99 SNPs eram selecionados). Isso indica que o SMOTE-NC, combinado com a maior estrutura epistática da Base 2, induziu o $\gamma = 0{,}001$ a ser menos expansivo. Para $\gamma = 0{,}01$, foram selecionados 67 SNPs com todos os causais, fitness 81,50\%, mantendo o padrão de elevada inclusão mas boa recuperação. A configuração $\gamma = 0{,}1$ selecionou 16 SNPs com 6 causais (ausentes: SNP6 e SNP8), fitness 84,80\%, representando o melhor equilíbrio, embora dois causais não sejam recuperados. Para $\gamma = 1{,}0$, foram selecionados 9 SNPs com 6 causais, fitness 80,60\%, confirmando que valores elevados de $\gamma$ reduzem a capacidade de recuperação dos causais.}
+
+\novo{A Interseção apresentou resultado interessante: 6 SNPs, dos quais 5 são causais (SNP88 é não causal), indicando que SNP88 apresenta alta associação consistente com o fenótipo em múltiplos modelos, possivelmente em desequilíbrio de ligação com algum SNP causal ou exibindo efeito epistático. O valor-$p$ corrigido, com 6 SNPs todos causais, manteve sua característica de alta precisão. Em suma, para a Base 2 com SMOTE-NC, o Radial $\gamma = 0{,}1$ destaca-se como a configuração mais parcimoniosa com boa recuperação, enquanto o Radial $\gamma = 0{,}001$ e $\gamma = 0{,}01$ garantem cobertura completa dos causais à custa de menor parcimônia.}
+
+\subsubsection{\novo{F1 Score como Função de Aptidão do GA}}
+
+\novo{Os valores de aptidão do GA pelo F1 Score foram: Linear = 54,77\%; Radial $\gamma{=}0{,}001$ = 54,97\%; Radial $\gamma{=}0{,}01$ = 57,89\%; Radial $\gamma{=}0{,}1$ = 63,07\%; Radial $\gamma{=}1{,}0$ = 49,67\%.}
+
+\begin{table}[ht]
+\centering
+\caption{\novo{SMS Completo --- Base 2 Desbalanceada, SMOTE-NC, F1 Score como Aptidão do GA \novo{(Novo experimento: SMOTE-NC + CV Estratificada)}}}
+\label{tab:smote2f1}
+\footnotesize
+\begin{tabular}{L{1.3cm}|L{1.3cm}|C{0.8cm}|L{4.8cm}|C{1.55cm}|C{0.95cm}|C{0.95cm}|C{0.9cm}|C{1.05cm}}
+\hline
+\textbf{Método} & \textbf{Kernel} & \boldmath$\gamma$ &
+  \novo{\textbf{SNPs selecionados}} & \novo{\textbf{\# SNPs (V)}} & \novo{\textbf{Fitness (F1\%)}} & \novo{\textbf{Prec.\ (\%)}} & \novo{\textbf{Sens.\ (\%)}} & \novo{\textbf{F1\ Var.\ (\%)}} \\
+\hline
+\multicolumn{2}{l|}{\novo{SNPs causais}} & \novo{---} &
+  \novo{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\textbf{8}} & \novo{---} & \novo{---} & \novo{---} & \novo{---} & \novo{---} \\
+\hline
+\novo{SMS} & \novo{Linear} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{8},14}} &
+  \novo{5 (4)} & \novo{54,77} & \novo{80,0} & \novo{50,0} & \novo{61,5} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,001} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{5},\textbf{8},14,25,\\
+               61,87,92}} &
+  \novo{10 (5)} & \novo{54,97} & \novo{50,0} & \novo{62,5} & \novo{55,6} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,01} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{8},\\
+               11,28,36,88}} &
+  \novo{11 (7)} & \novo{57,89} & \novo{63,6} & \novo{87,5} & \novo{73,7} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{0,1} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{7},\textbf{8},\\
+               14,21,25,36,60,87}} &
+  \novo{13 (7)} & \novo{63,07} & \novo{53,8} & \novo{87,5} & \novo{66,7} \\
+\hline
+\novo{SMS} & \novo{Radial} & \novo{1,0} &
+  \novo{\makecell[l]{\textbf{1},\textbf{3},\textbf{4},\textbf{6},87}} &
+  \novo{5 (4)} & \novo{49,67} & \novo{80,0} & \novo{50,0} & \novo{61,5} \\
+\hline
+\multicolumn{2}{l|}{\novo{União}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{6},\textbf{7},\\
+               \textbf{8},11,14,\\
+               21,25,28,36,60,61,87,\\
+               88,92}} &
+  \novo{19 (8)} & \novo{---} & \novo{42,1} & \novo{100,0} & \novo{59,3} \\
+\hline
+\multicolumn{2}{l|}{\novo{Interseção}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{3}}} &
+  \novo{2 (2)} & \novo{---} & \novo{100,0} & \novo{25,0} & \novo{40,0} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ bruto}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8},49,\\
+               62,77,83,88,89}} &
+  \novo{12 (6)} & \novo{---} & \novo{50,0} & \novo{75,0} & \novo{60,0} \\
+\hline
+\multicolumn{2}{l|}{\novo{Valor-$p$ corrigido}} & \novo{---} &
+  \novo{\makecell[l]{\textbf{1},\textbf{2},\textbf{3},\textbf{4},\textbf{5},\textbf{8}}} &
+  \novo{6 (6)} & \novo{---} & \novo{100,0} & \novo{75,0} & \novo{85,7} \\
+\hline
+\end{tabular}
+\end{table}
+
+\novo{A otimização por F1 Score na Base 2 produziu conjuntos substancialmente mais compactos do que a otimização por acurácia. O kernel Linear selecionou apenas 5 SNPs com 4 causais (ausentes: SNP4, SNP5, SNP6, SNP7), evidenciando que o F1 induz extrema seletividade para o kernel Linear. Para $\gamma = 0{,}001$, foram selecionados 10 SNPs com 5 causais (ausentes: SNP4, SNP6, SNP7), uma redução drástica em relação aos 53 SNPs da otimização por acurácia. Isso demonstra que o F1 Score penaliza fortemente a inclusão excessiva de variáveis.}
+
+\novo{Para $\gamma = 0{,}01$, o método selecionou 11 SNPs com 7 causais (ausente: SNP7), apresentando melhor recuperação que o Linear com apenas marginalmente mais variáveis. Para $\gamma = 0{,}1$ (melhor configuração), foram selecionados 13 SNPs com 7 causais (ausente: SNP6), com fitness F1 de 63,07\%. Comparado aos 16 SNPs e 6 causais da otimização por acurácia, o F1 recuperou um causal adicional com apenas 3 SNPs a mais, indicando maior eficiência biológica. Para $\gamma = 1{,}0$, o método selecionou apenas 5 SNPs com 4 causais e o menor fitness (49,67\%), confirmando que valores muito elevados de $\gamma$ são inadequados para a Base 2.}
+
+\novo{A União por F1 recuperou todos os 8 causais em apenas 19 SNPs (contra 81 SNPs da acurácia), e a Interseção selecionou apenas SNPs 1 e 3, ambos causais. Esses resultados demonstram que a otimização por F1 produz conjuntos muito mais parcimoniosos para a Base 2, com maior razão causais/total, especialmente para $\gamma = 0{,}01$ e $\gamma = 0{,}1$.}
+
+% =============================================================
+\section{\novo{Diferenças entre as Bases Simuladas}}
+% =============================================================
+
+\novo{As duas bases de dados simuladas neste estudo diferem fundamentalmente em sua estrutura genética. A Base de Dados 1 foi construída com oito efeitos aditivos independentes (SNPs 1 a 8), onde cada marcador influencia o fenótipo de forma isolada, sem interação com os demais. Esse cenário privilegia métodos capazes de capturar relações lineares simples entre genótipo e fenótipo, tornando o kernel Linear competitivo com os kernels Radiais para a recuperação dos marcadores causais.}
+
+\novo{A Base de Dados 2, por sua vez, incorpora uma estrutura mais complexa, com efeitos agrupados e interações epistáticas entre marcadores. Nesse cenário, a identificação dos SNPs relevantes exige maior capacidade do modelo para capturar dependências não lineares e interações de alta ordem entre variáveis. Os kernels Radiais são especialmente adequados para esse tipo de estrutura, pois mapeiam os dados para um espaço de maior dimensão, onde os padrões epistáticos podem ser separados de forma mais eficiente.}
+
+\novo{Os resultados obtidos refletem essa diferença estrutural de forma clara. Para a Base 1 balanceada, o kernel Linear apresentou desempenho competitivo, recuperando 7 dos 8 SNPs causais com apenas 13 SNPs selecionados (Tabela~\ref{tab:t1}), resultado próximo ao obtido pelo Radial $\gamma = 0{,}01$ (8 causais, 13 SNPs). Para a Base 2 balanceada, o kernel Linear recuperou apenas 6 dos 8 causais com 14 SNPs (Tabela~\ref{tab:t3}), enquanto o Radial $\gamma = 0{,}001$ recuperou todos os 8 com 30 SNPs, evidenciando a necessidade de kernels mais flexíveis para capturar a estrutura epistática.}
+
+\novo{Em termos da influência do parâmetro $\gamma$, ambas as bases apresentaram padrão consistente: valores muito baixos ($\gamma = 0{,}001$) tenderam à subidentificação dos causais (especialmente em dados desbalanceados), valores intermediários ($\gamma = 0{,}01$ e $\gamma = 0{,}1$) apresentaram melhor equilíbrio, e valores muito elevados ($\gamma = 1{,}0$) levaram à perda de causais por sobreajuste. A Base 2 apresentou maior variabilidade nos resultados entre configurações, reflexo da maior complexidade estrutural, tornando a parametrização ainda mais crítica. Em ambas as bases, o Radial com $\gamma = 0{,}1$ foi consistentemente a configuração mais equilibrada entre recuperação e parcimônia.}
+
+% =============================================================
+\section{\novo{Comparação entre Métricas: Acurácia vs.\ F1 Score}}
+% =============================================================
+
+\novo{A escolha da métrica de avaliação exerce influência direta sobre os resultados de seleção de variáveis pelo SMS. A acurácia, definida como a proporção de classificações corretas sobre o total de observações, pode ser enganosa em cenários de dados desbalanceados. Quando uma classe é substancialmente mais frequente (como nas bases desbalanceadas com proporção 80\%/20\%), um classificador que prediz sempre a classe majoritária atinge acurácia de 80\% sem capturar qualquer informação sobre a classe minoritária. Isso induz o GA a selecionar modelos que exploram o viés de classe, em vez de identificar os marcadores causais verdadeiros.}
+
+\novo{O F1 Score, a média harmônica entre precisão e revocação, penaliza igualmente falsos positivos e falsos negativos. Essa métrica é mais adequada para dados desbalanceados, pois exige que o modelo apresente bom desempenho em ambas as classes. A penalização por classificações errôneas da classe minoritária força o GA a buscar soluções com maior poder discriminatório, resultando tipicamente em conjuntos de SNPs mais informativos e parcimoniosos.}
+
+\novo{Os experimentos com SMOTE-NC confirmaram essa expectativa de forma consistente. Para a \textbf{Base 1} com dados desbalanceados:}
+\begin{itemize}
+  \item \novo{Otimização por acurácia (Radial $\gamma = 0{,}1$): fitness 86,60\%, 11 SNPs selecionados, 6 causais recuperados.}
+  \item \novo{Otimização por F1 Score (Radial $\gamma = 0{,}1$): fitness F1 65,49\%, apenas 8 SNPs selecionados, 6 causais recuperados.}
+  \item \novo{Diferença: o F1 atingiu o mesmo número de causais com 3 SNPs a menos (redução de 27\% no tamanho do conjunto selecionado).}
+\end{itemize}
+
+\novo{Para a \textbf{Base 2} com dados desbalanceados:}
+\begin{itemize}
+  \item \novo{Otimização por acurácia (Radial $\gamma = 0{,}1$): fitness 84,80\%, 16 SNPs selecionados, 6 causais recuperados.}
+  \item \novo{Otimização por F1 Score (Radial $\gamma = 0{,}1$): fitness F1 63,07\%, 13 SNPs selecionados, 7 causais recuperados.}
+  \item \novo{Diferença: o F1 recuperou 1 causal adicional com 3 SNPs a menos, indicando maior eficiência biológica.}
+\end{itemize}
+
+\novo{Adicionalmente, a otimização por F1 Score praticamente eliminou o problema do Radial $\gamma = 0{,}001$ de selecionar quase todo o espaço de variáveis: enquanto a acurácia levou à seleção de 99 SNPs na Base 1, o F1 resultou em apenas 15 SNPs para o mesmo $\gamma$. Esse resultado demonstra que o F1 Score como função de aptidão do GA é significativamente mais adequado para dados genômicos desbalanceados, pois produz modelos mais parcimoniosos e biologicamente informativos sem sacrificar a capacidade de recuperação dos causais. Para aplicações práticas em genômica com dados desbalanceados, recomenda-se fortemente a utilização do F1 Score (ou métricas equivalentes como AUC-ROC ou G-mean) no lugar da acurácia como critério de otimização do GA.}
+
+% =============================================================
+\section{\novo{Efeito do Desbalanceamento de Classes}}
+% =============================================================
+
+\novo{O desbalanceamento de classes (proporção 80\%/20\% entre fenótipos na base desbalanceada) exerce influência significativa e variada sobre o comportamento dos métodos SMS. A análise comparativa entre as bases balanceadas e desbalanceadas revela padrões distintos por kernel e parâmetro.}
+
+\novo{Para a \textbf{Base 1}, o efeito mais dramático do desbalanceamento observa-se no kernel Linear, que passou de 13 SNPs (7 causais, acurácia 72,20\%) na base balanceada para 53 SNPs (8 causais, acurácia 80,50\%) na desbalanceada. O aumento expressivo na quantidade de SNPs selecionados, acompanhado de melhora na acurácia, ilustra o comportamento típico do modelo linear em dados desbalanceados: o algoritmo explora o viés da classe majoritária para maximizar a acurácia, sendo induzido a incluir mais variáveis para separar as poucas amostras da classe minoritária.}
+
+\novo{O kernel Radial com $\gamma = 0{,}001$ apresentou o efeito mais severo do desbalanceamento: com dados balanceados, recuperou 7 causais em 12 SNPs; com dados desbalanceados, recuperou apenas 2 causais em 11 SNPs. Essa drástica redução na capacidade de identificação sugere que o hiperparâmetro $\gamma = 0{,}001$, ao criar fronteiras de decisão muito suaves, torna-se particularmente vulnerável ao viés de classe, priorizando a estrutura da classe majoritária e perdendo o sinal da classe minoritária.}
+
+\novo{Os kernels Radiais com $\gamma = 0{,}01$ e $\gamma = 0{,}1$ mostraram comportamentos opostos ao desbalanceamento: o $\gamma = 0{,}01$ manteve recuperação integral dos causais em ambas as condições (13 vs.\ 60 SNPs), enquanto o $\gamma = 0{,}1$ apresentou leve redução na recuperação (6 causais em ambos os cenários) com mudança no conjunto de SNPs não causais incluídos.}
+
+\novo{A aplicação do \textbf{SMOTE-NC} visou mitigar esses efeitos, gerando amostras sintéticas da classe minoritária durante o treinamento. Os resultados indicam que o SMOTE-NC foi eficaz em restaurar parcialmente a capacidade de discriminação dos modelos. Para a Base 1 com $\gamma = 0{,}1$ e acurácia, o SMOTE-NC produziu seleção de 11 SNPs (6 causais, fitness 86,60\%), resultado similar à base balanceada sem SMOTE (9 SNPs, 6 causais, 84,80\%), demonstrando normalização do comportamento do modelo. Para a Base 2, o efeito foi igualmente positivo: o $\gamma = 0{,}1$ com SMOTE-NC e acurácia selecionou 16 SNPs (6 causais, fitness 84,80\%), enquanto a base desbalanceada sem SMOTE selecionou 11 SNPs (8 causais, 87,10\%). A pequena diferença na recuperação de causais (6 vs.\ 8) pode refletir diferenças na composição das amostras sintéticas geradas pelo SMOTE-NC.}
+
+\novo{Esses resultados demonstram que o SMOTE-NC, combinado com validação cruzada estratificada, é uma estratégia eficaz para reduzir o viés de desbalanceamento na seleção de SNPs. A validação cruzada estratificada garante que cada partição de treinamento e teste mantenha a proporção de classes original, complementando o SMOTE-NC na produção de estimativas de desempenho mais confiáveis e representativas. Recomenda-se a adoção dessas técnicas como protocolo padrão para análises genômicas com dados fenotípicos desbalanceados.}
+
+% =============================================================
+\section*{\novo{Natureza Distinta dos Métodos: SMS-SVM vs.\ Valor-$p$ por Regressão Logística}}
+% =============================================================
+
+\novo{Uma distinção fundamental para a interpretação correta dos resultados é que os métodos apresentados nas tabelas \textbf{não pertencem à mesma família metodológica}. Eles operam sob princípios completamente diferentes, o que torna sua comparação direta especialmente informativa. A figura conceitual abaixo ilustra a estrutura do pipeline SMS e a posição dos métodos de Valor-$p$:}
+
+\begin{center}
+\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{p{13.5cm}}
+\hline
+\textbf{Pipeline SMS (métodos baseados em SVM):} \\
+\quad 1.\ Random Forest $\rightarrow$ ranking de importância dos SNPs \\
+\quad 2.\ SVM --- Etapa de Corte: eliminação iterativa de SNPs de baixo rank (por kernel) \\
+\quad 3.\ GA --- Refinamento: busca do subconjunto ótimo (aptidão = Acurácia ou F1 do SVM) \\
+\quad 4.\ Síntese: \textbf{União} (SNPs em qualquer kernel) ou \textbf{Interseção} (SNPs em todos os kernels) \\
+\hline
+\textbf{Métodos de Valor-$p$ (referência estatística univariada, independente do SVM):} \\
+\quad Regressão logística separada para cada SNP $\sim$ fenótipo \\
+\quad Valor-$p$ bruto: sem correção para múltiplos testes \\
+\quad Valor-$p$ corrigido: com correção (Bonferroni/FDR) $\rightarrow$ limiar conservador \\
+\hline
+\end{tabular}
+\end{center}
+
+\novo{\textbf{O Valor-$p$ corrigido não agrega informação dos kernels SVM.} Ele é calculado por regressão logística univariada --- um SNP por vez, completamente à parte do pipeline SVM. Trata-se de um teste de associação marginal equivalente ao empregado em estudos GWAS (\textit{Genome-Wide Association Studies}). Sua presença nos resultados serve como \textbf{linha de base estatística clássica}, permitindo avaliar se o SMS-SVM agrega valor além do que uma análise univariada simples já capturaria.}
+
+\novo{As duas famílias diferem em três aspectos essenciais:}
+
+\begin{description}
+  \item[\novo{1.\ Tipo de associação detectada:}]
+  \novo{A regressão logística univariada detecta apenas \textbf{associações marginais} --- o efeito de cada SNP isoladamente sobre o fenótipo. Se um SNP causa efeito somente em combinação com outro (epistasia pura), seu teste marginal será não significativo e ele será descartado pelo Valor-$p$, mesmo sendo causal. O SVM com kernel Radial, ao operar no espaço de características mapeado pelo kernel, pode capturar essas interações implicitamente, sem que sejam especificadas a priori.}
+
+  \item[\novo{2.\ Dimensionalidade:}]
+  \novo{A regressão logística univariada testa cada SNP independentemente (ignora correlações entre SNPs). O SVM trata todos os SNPs simultaneamente, capturando a estrutura conjunta dos dados. Isso é particularmente relevante em desequilíbrio de ligação (\textit{LD}), onde SNPs correlacionados entre si podem se ``mascarar'' em testes marginais.}
+
+  \item[\novo{3.\ Critério de seleção:}]
+  \novo{O Valor-$p$ seleciona SNPs com associação individual estatisticamente significativa. O SMS-SVM seleciona SNPs que, \textbf{em conjunto}, maximizam o poder discriminatório do classificador. Um SNP sem efeito marginal detectável pode ainda ser selecionado pelo SVM se, combinado com outros SNPs, melhorar substancialmente a classificação.}
+\end{description}
+
+\novo{\textbf{Implicação prática:} quando o SMS-SVM (especialmente com kernels Radiais) supera o Valor-$p$ corrigido em F1 Var., isso constitui \textbf{evidência de que o SVM capturou sinal genético que a regressão logística marginal perdeu} --- o que é o argumento central a favor do método. Nos cenários em que o Valor-$p$ corrigido se equipara ou supera o SMS, isso indica que as associações causais são suficientemente fortes no nível marginal, tornando o SVM redundante para aquele conjunto de dados específico. Essa comparação é portanto metodologicamente rica: ela quantifica o ganho efetivo do aprendizado de máquina sobre a estatística clássica.}
+
+\novo{\textbf{O multi-kernel como estratégia de cobertura de arquiteturas genéticas desconhecidas:} No mundo real, a arquitetura genética do fenótipo de interesse é desconhecida --- não sabemos se os efeitos são aditivos, epistáticos, de baixa ou alta ordem. Rodar o SMS com todos os 5 kernels simultaneamente é estratégico: o kernel Linear cobre efeitos puramente aditivos; kernels Radiais com $\gamma$ crescente cobrem interações de ordem progressivamente maior. A União garante que nenhum SNP causal identificado por qualquer perspectiva (kernel) seja perdido; a Interseção garante o núcleo de marcadores consensualmente identificados independentemente da arquitetura assumida. Escolher um único kernel pressuporia conhecer a arquitetura genética de antemão, o que é justamente o que o estudo busca revelar.}
+
+% =============================================================
+\section*{\novo{Escolha da Configuração do SMS: Validação, Métrica de Corte e Fitness do GA}}
+% =============================================================
+
+\novo{Além da escolha dos kernels, o pipeline SMS envolve três outras decisões de configuração com impacto direto sobre a qualidade da seleção de SNPs: (1) o tipo de validação cruzada, (2) a métrica utilizada na etapa de corte do SVM e (3) a métrica de fitness do Algoritmo Genético. As subseções a seguir analisam cada dimensão com base nos resultados obtidos e propõem uma configuração recomendada.}
+
+\subsection*{\novo{Dimensão 1: Tipo de Validação Cruzada}}
+
+\novo{Os experimentos testaram dois regimes de validação: (a) \textbf{validação simples} (\textit{hold-out} único), utilizada nos experimentos sem SMOTE; e (b) \textbf{$k$-fold estratificado} ($k = 10$) com SMOTE-NC aplicado exclusivamente às partições de treinamento, utilizado nos novos experimentos.}
+
+\novo{O $k$-fold estratificado apresenta duas vantagens fundamentais sobre o \textit{hold-out} simples:}
+\begin{itemize}
+  \item \novo{\textbf{Estimativa de desempenho mais confiável:} a média sobre 10 partições reduz substancialmente a variância da estimativa em relação a uma única divisão aleatória. Com um único \textit{hold-out}, uma partição de teste particularmente fácil ou difícil pode distorcer o valor de fitness do GA e levar à seleção de um subconjunto de SNPs subótimo.}
+  \item \novo{\textbf{Proteção contra \textit{data leakage} do SMOTE:} ao aplicar o SMOTE-NC apenas dentro de cada partição de treinamento, evita-se que amostras sintéticas geradas a partir do conjunto de validação contaminem a avaliação do modelo. Esse erro --- aplicar SMOTE antes da divisão treino/teste --- infla artificialmente o desempenho e invalida a estimativa de generalização. A validação cruzada estratificada estrutura o pipeline de forma que cada partição de validação contenha exclusivamente amostras reais, garantindo estimativas não viesadas.}
+\end{itemize}
+
+\novo{\textbf{Escolha recomendada:} $k$-fold estratificado com $k = 10$ e SMOTE-NC aplicado somente às partições de treinamento.}
+
+\subsection*{\novo{Dimensão 2: Métrica na Etapa de Corte do SVM}}
+
+\novo{A etapa de corte elimina iterativamente os SNPs de menor importância (segundo o ranking da RF), avaliando o SVM a cada remoção. A métrica aqui determina quais SNPs sobrevivem para a fase do GA, tendo impacto direto no tamanho do espaço de busca do AG.}
+
+\novo{O efeito mais dramático observado foi no kernel Radial $\gamma = 0{,}001$ com dados desbalanceados:}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{L{4.0cm}|C{2.8cm}|C{2.8cm}|C{2.8cm}}
+  \textbf{Kernel} & \textbf{Métrica de corte} & \textbf{SNPs para o GA} & \textbf{Causais recuperados} \\
+  \hline
+  Radial $\gamma = 0{,}001$ & Acurácia & 99 de 100 & 7 \\
+  Radial $\gamma = 0{,}001$ & F1 Score  & 15 & 6 \\
+  \hline
+  Radial $\gamma = 0{,}01$ & Acurácia & 66 & 8 \\
+  Radial $\gamma = 0{,}01$ & F1 Score  & 11 & 6 \\
+  \hline
+  Radial $\gamma = 0{,}1$ & Acurácia & 11 & 6 \\
+  Radial $\gamma = 0{,}1$ & F1 Score  & 8 & 6 \\
+\end{tabular}
+\end{center}
+\renewcommand{\arraystretch}{1.3}
+
+\novo{Com acurácia no corte e $\gamma$ pequeno, o SVM produz fronteiras suaves que classificam bem a classe majoritária sem depender de nenhum SNP específico. Como resultado, remover qualquer SNP não degrada a acurácia, e praticamente todo o espaço de variáveis sobrevive ao corte --- tornando a etapa de corte ineficaz. O F1 no corte penaliza imediatamente qualquer deterioração na classe minoritária, forçando o corte a ser genuinamente seletivo. Além disso, um GA que recebe 99 variáveis tem espaço de busca exponencialmente maior do que um que recebe 15, tornando a otimização menos eficiente e mais suscetível a convergência em mínimos locais.}
+
+\novo{\textbf{Escolha recomendada:} F1 Score na etapa de corte do SVM.}
+
+\subsection*{\novo{Dimensão 3: Métrica de Fitness no Algoritmo Genético}}
+
+\novo{O GA busca o subconjunto de SNPs que maximiza o fitness do SVM na validação cruzada. Os resultados comparando acurácia vs.\ F1 como fitness do GA mostram padrão consistente em ambas as bases simuladas:}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{L{3.5cm}|C{2.2cm}|C{1.6cm}|C{2.2cm}|C{1.6cm}}
+  & \multicolumn{2}{c|}{\textbf{Fitness = Acurácia}} & \multicolumn{2}{c}{\textbf{Fitness = F1 Score}} \\
+  \textbf{Kernel} & \textbf{F1 Var.} & \textbf{N SNPs} & \textbf{F1 Var.} & \textbf{N SNPs} \\
+  \hline
+  \multicolumn{5}{l}{\textit{Base 1 Desbalanceada (SMOTE-NC)}} \\
+  \hline
+  Radial $\gamma = 0{,}1$ & 63,2\% & 11 & \textbf{75,0\%} & \textbf{8} \\
+  Radial $\gamma = 1{,}0$ & 66,7\% & 10 & 61,5\% & 5 \\
+  \hline
+  \multicolumn{5}{l}{\textit{Base 2 Desbalanceada (SMOTE-NC)}} \\
+  \hline
+  Radial $\gamma = 0{,}01$ & 21,3\% & 67 & \textbf{73,7\%} & \textbf{11} \\
+  Radial $\gamma = 0{,}1$ & 50,0\% & 16 & 66,7\% & 13 \\
+\end{tabular}
+\end{center}
+\renewcommand{\arraystretch}{1.3}
+
+\novo{O GA com acurácia como fitness pode encontrar subconjuntos de SNPs que classificam bem apenas a classe majoritária --- obtendo fitness alto sem poder discriminativo real. O GA com F1 é forçado a encontrar subconjuntos que discriminam ambas as classes simultaneamente. Isso se traduz em conjuntos menores e mais informativos biologicamente, sem sacrifício expressivo na recuperação dos SNPs causais.}
+
+\novo{\textbf{Escolha recomendada:} F1 Score como função de fitness do GA.}
+
+\subsection*{\novo{Configuração Final Recomendada e seus Fundamentos}}
+
+\novo{A configuração recomendada para o SMS em dados genômicos com desbalanceamento de classes é:}
+
+\begin{center}
+\footnotesize
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{L{4.5cm}|L{9.0cm}}
+  \textbf{Componente} & \textbf{Configuração recomendada} \\
+  \hline
+  Kernels & Todos os 5 (Linear + Radial $\gamma \in \{0{,}001;\, 0{,}01;\, 0{,}1;\, 1{,}0\}$) \\
+  \hline
+  Validação cruzada & $k$-fold estratificado ($k = 10$) \\
+  \hline
+  Balanceamento & SMOTE-NC somente nas partições de treinamento \\
+  \hline
+  Métrica no corte SVM & F1 Score \\
+  \hline
+  Fitness do GA & F1 Score \\
+  \hline
+  Síntese final & União (alta sensibilidade) + Interseção (alta precisão) + Valor-$p$ como baseline GWAS \\
+\end{tabular}
+\end{center}
+\renewcommand{\arraystretch}{1.3}
+
+\novo{\textbf{Argumento central --- coerência interna do pipeline:} as três escolhas se reforçam mutuamente. O $k$-fold estratificado garante estimativas confiáveis do F1; o SMOTE-NC garante que o SVM veja amostras balanceadas no treino sem contaminar a avaliação; o F1 no corte produz um pré-filtro genuinamente seletivo; e o F1 no GA otimiza o subconjunto final pelo mesmo critério que resiste ao viés de classe. Usar F1 em todas as etapas cria um pipeline \textbf{internamente consistente} --- todas as decisões são guiadas pelo mesmo conceito de desempenho equilibrado entre classes.}
+
+\novo{\textbf{Por que não acurácia em dados desbalanceados:} a acurácia é válida apenas quando as classes são aproximadamente balanceadas. Em dados 80\%/20\%, ela é uma função crescente do número de amostras da classe majoritária corretamente classificadas, e o SVM aprende isso rapidamente. Usar acurácia no corte ou no GA em dados desbalanceados não é uma escolha subótima: é uma \textbf{especificação incorreta do objetivo}. O pipeline está sendo otimizado para a métrica errada em relação ao problema que se deseja resolver.}
+
+\novo{\textbf{Limitação:} para dados genuinamente balanceados (proporção 50\%/50\%), a diferença entre acurácia e F1 é pequena, pois F1 = acurácia quando as classes têm o mesmo tamanho e o modelo é simétrico. Nesse caso, a escolha da métrica tem menor impacto prático. No entanto, como no contexto genômico real raramente se tem equilíbrio perfeito de classes, \textbf{F1 + $k$-fold estratificado é a escolha mais defensável e generalizável} independentemente da proporção de classes.}
+
+% =============================================================
+\section{\novo{Conclusão Comparativa}}
+% =============================================================
+
+\novo{Os resultados consolidados neste relatório permitem extrair conclusões abrangentes sobre o comportamento dos métodos SMS em diferentes cenários experimentais, abrangendo variações de base de dados (Base 1 e Base 2), balanceamento de classes (50\%/50\% e 80\%/20\%), tipo de validação (balanceada e desbalanceada), métrica de otimização do GA (acurácia e F1 Score) e estratégia de balanceamento (sem SMOTE e com SMOTE-NC).}
+
+\novo{\textbf{1. Configuração mais robusta:} O kernel Radial com $\gamma = 0{,}1$ demonstrou ser a configuração mais robusta e equilibrada em praticamente todos os cenários analisados (12 tabelas originais e 4 novas). Esse valor de $\gamma$ representa um compromisso eficaz entre a flexibilidade do kernel (capacidade de capturar relações não lineares) e a generalização do modelo (resistência ao sobreajuste). Tanto para efeitos aditivos independentes (Base 1) quanto para efeitos epistáticos (Base 2), com dados balanceados e desbalanceados, essa configuração consistentemente recuperou a maioria dos SNPs causais com número controlado de falsos positivos.}
+
+\novo{\textbf{2. Comportamentos extremos:} Valores muito baixos de $\gamma$ ($\gamma = 0{,}001$) foram consistentemente os mais instáveis, alternando entre alta inclusão (sem SMOTE) e subcaptura de causais (com desbalanceamento). Valores muito altos ($\gamma = 1{,}0$) resultaram sistematicamente em perda de causais por sobreajuste, produzindo conjuntos parcimoniosos mas biologicamente incompletos. O kernel Linear foi eficaz para a Base 1 (efeitos lineares simples) mas menos adequado para a Base 2 (efeitos epistáticos).}
+
+\novo{\textbf{3. Métodos de combinação dentro do SMS:} A União e a Interseção são etapas de síntese do próprio pipeline SMS --- não são métodos independentes. A União maximizou a sensibilidade (todo SNP identificado por qualquer kernel é incluído), sendo útil como cobertura máxima quando a arquitetura genética é desconhecida. A Interseção maximizou a precisão (apenas SNPs identificados por todos os kernels), sendo útil para identificar marcadores robustos independentemente do kernel. A utilização conjunta de ambas fornece um intervalo de confiança: a Interseção é o núcleo conservador e a União é o envelope inclusivo. Em cenários práticos com arquitetura genética desconhecida, recomenda-se reportar ambos, pois kernels distintos capturam padrões de interação de diferentes ordens.}
+
+\novo{\textbf{4. Valor-$p$: referência estatística univariada, não componente do SMS:} O valor-$p$ corrigido e o bruto são calculados por regressão logística univariada --- um SNP por vez, completamente independente do pipeline SVM. Tratam-se de testes de associação marginal equivalentes ao GWAS clássico. O valor-$p$ corrigido destacou-se pela alta precisão (100\% em múltiplos experimentos), pois o limiar conservador (Bonferroni/FDR) elimina quase todos os falsos positivos. Contudo, ele é intrinsecamente cego para epistasia pura: SNPs que só causam efeito em combinação com outros não têm associação marginal detectável e são descartados. Quando o SMS-SVM supera o valor-$p$ corrigido em F1 Var., isso é evidência direta de que o SVM capturou sinal genético --- interações ou padrões conjuntos --- que a regressão logística marginal não detectou.}
+
+\novo{\textbf{5. Estratégia SMOTE-NC + F1 Score:} A combinação de SMOTE-NC, validação cruzada estratificada e F1 Score como aptidão do GA emergiu como a estratégia mais eficaz para dados desbalanceados. Essa abordagem produziu conjuntos de SNPs mais compactos e biologicamente informativos do que qualquer outra combinação avaliada, especialmente para $\gamma = 0{,}1$. A redução de 27--43\% no tamanho do conjunto selecionado (comparado à otimização por acurácia) sem sacrifício na recuperação de causais representa um avanço metodológico relevante para análises genômicas com dados fenotípicos desbalanceados.}
+
+\novo{\textbf{6. Recomendações práticas:} Com base nos resultados analisados, recomenda-se: (i) \textbf{rodar o SMS com todos os 5 kernels} (Linear, Radial $\gamma = 0{,}001$, $0{,}01$, $0{,}1$ e $1{,}0$) simultaneamente, pois a arquitetura genética real é desconhecida e cada kernel cobre uma faixa diferente de complexidade de interação; (ii) utilizar \textbf{F1 Score} (ou G-mean) como função de aptidão do GA quando os dados forem desbalanceados, pois a acurácia pode ser inflada pela classe majoritária; (iii) incorporar \textbf{SMOTE-NC e validação cruzada estratificada} como protocolo de treinamento para dados com proporção de classes superior a 60\%/40\%; (iv) comparar a União e a Interseção dos kernels SMS com os métodos de valor-$p$ bruto e corrigido como \textbf{referência estatística univariada (baseline GWAS)}: se o SMS supera o valor-$p$, há evidência de sinal epistático; se não supera, a associação marginal é suficiente; (v) interpretar a \textbf{União} como envelope inclusivo (alta sensibilidade) e a \textbf{Interseção} como núcleo conservador (alta precisão), reportando ambos para delimitar o intervalo de confiança da seleção; e (vi) \textbf{não selecionar um único kernel} como configuração definitiva --- a força do SMS reside exatamente na diversidade de perspectivas que o ensemble de kernels proporciona.}
+
+\end{document}
+
+\novo{\textbf{F1 Var., Precisão e Sensibilidade dos SNPs:} Avaliando o equilíbrio entre pureza (Prec.) e cobertura (Sens.) da seleção de SNPs, o SMS Radial $\gamma=1{,}0$ destacou-se como o melhor método SMS com F1 Var.\ = 70,6\% (Prec.\ = 66,7\%, Sens.\ = 75,0\%). O SMS Radial $\gamma=0{,}01$ apresentou o menor F1 Var.\ entre os SMS (21,3\%), reflexo de alta Sens.\ com baixa Prec. A Interseção (F1 Var.\ = 71,4\%) é superior ao melhor SMS em F1, com Prec.\ = 83,3\% e Sens.\ = 62,5\%. O Valor-$p$ corrigido apresentou alta precisão: embora toda a seleção seja causal (Prec.\ = 100\%), a baixa sensibilidade (75,0\%) reduz o F1 Var.\ para 85,7\%. A União amplia a sensibilidade (Sens.\ = 100,0\%) ao custo de Prec.\ = 9,9\%, resultando em F1 Var.\ = 18,0\%. Em síntese, o F1 Var. penaliza tanto a inclusão excessiva de não-causais (baixa Prec.) quanto a omissão de causais (baixa Sens.), revelando o método que melhor equilibra as duas dimensões da seleção de SNPs.}

@@ -1,0 +1,200 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{geometry}
+\geometry{a4paper, margin=2cm}
+
+\begin{document}
+
+% -----------------------------------------------------------------------
+% TABELA 1 — Acurácia como critério de corte
+% -----------------------------------------------------------------------
+\begin{table}[htbp]
+\centering
+\caption{SVM com kernels Linear e Radial para base de dados 1 desbalanceada
+         (SMOTE-NC, acurácia como critério de corte).}
+\label{tab:sms_acc_desbal}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|c|c|c|c|c}
+\hline
+\textbf{Método} &
+\textbf{Kernel} &
+\textbf{$\gamma$} &
+\textbf{\begin{tabular}[c]{@{}c@{}}\emph{SNPs} selecionados\end{tabular}} &
+\textbf{\begin{tabular}[c]{@{}c@{}}\# \emph{SNPs}\\(V)\end{tabular}} &
+\textbf{\begin{tabular}[c]{@{}c@{}}Acurácia\\média (\%)\end{tabular}} \\
+\hline
+SNPs causais & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{6}, \textbf{7}, \textbf{8}
+  \end{tabular} & -- & -- \\
+\hline
+SMS & Linear & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{7}, \textbf{8}, 10, 13, 16,\\
+    20, 22, 24, 25, 32, 36, 43, 44, 47, 48,\\
+    49, 50, 52, 54, 55, 56, 58, 59, 63, 65,\\
+    67, 68, 72, 76, 79, 82, 83, 94, 97
+  \end{tabular} & 39 (7) & 76{,}00 \\
+\hline
+SMS & Radial & 0{,}001 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{6}, \textbf{7}, 9, 10, 11,\\
+    12, 13, 14, 15, 16, 17, 19, 21, 22, 23,\\
+    24, 25, 26, 27, 28, 29, 30, 31, 32, 33,\\
+    34, 35, 36, 37, 38, 39, 40, 41, 42, 43,\\
+    44, 45, 46, 47, 48, 49, 50, 51, 52, 53,\\
+    54, 55, 56, 57, 58, 60, 61, 62, 63, 64,\\
+    65, 66, 67, 68, 69, 70, 71, 72, 73, 74,\\
+    75, 76, 77, 78, 79, 80, 81, 82, 83, 84,\\
+    85, 86, 87, 88, 89, 90, 91, 92, 93, 94,\\
+    95, 96, 97, 98, 99, 100
+  \end{tabular} & 99 (7) & 74{,}80 \\
+\hline
+SMS & Radial & 0{,}01 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{6}, \textbf{7}, \textbf{8}, 9, 10,\\
+    11, 14, 16, 17, 20, 22, 24, 25, 26, 28,\\
+    31, 32, 33, 34, 35, 36, 39, 43, 44, 47,\\
+    48, 50, 52, 53, 54, 55, 56, 58, 59, 60,\\
+    63, 65, 66, 67, 68, 69, 71, 72, 73, 75,\\
+    76, 77, 78, 79, 82, 83, 84, 85, 86, 87,\\
+    88, 92, 94, 97, 99, 100
+  \end{tabular} & 66 (8) & 80{,}60 \\
+\hline
+SMS & Radial & 0{,}1 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{7},
+    \textbf{8}, 36, 60, 65, 71, 76
+  \end{tabular} & 11 (6) & 86{,}60 \\
+\hline
+SMS & Radial & 1{,}0 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{7},
+    \textbf{8}, 24, 36, 43, 65
+  \end{tabular} & 10 (6) & 82{,}90 \\
+\hline
+União & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    Todos os 100 \emph{SNPs}
+  \end{tabular} & 100 (8) & -- \\
+\hline
+Interseção & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{7},
+    36, 65
+  \end{tabular} & 7 (5) & -- \\
+\hline
+Valor-$p$ bruto & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{7}, \textbf{8}, 27, 28, 42, 89
+  \end{tabular} & 11 (7) & -- \\
+\hline
+Valor-$p$ corrigido & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{4}, \textbf{7}, \textbf{8}
+  \end{tabular} & 5 (5) & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------
+% TABELA 2 — F1 Score como critério de corte
+% -----------------------------------------------------------------------
+\begin{table}[htbp]
+\centering
+\caption{SVM com kernels Linear e Radial para base de dados 1 desbalanceada
+         (SMOTE-NC, F1 Score como critério de corte).}
+\label{tab:sms_f1_desbal}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|c|c|c|c|c}
+\hline
+\textbf{Método} &
+\textbf{Kernel} &
+\textbf{$\gamma$} &
+\textbf{\begin{tabular}[c]{@{}c@{}}\emph{SNPs} selecionados\end{tabular}} &
+\textbf{\begin{tabular}[c]{@{}c@{}}\# \emph{SNPs}\\(V)\end{tabular}} &
+\textbf{\begin{tabular}[c]{@{}c@{}}F1\\médio (\%)\end{tabular}} \\
+\hline
+SNPs causais & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{6}, \textbf{7}, \textbf{8}
+  \end{tabular} & -- & -- \\
+\hline
+SMS & Linear & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{7}, \textbf{8}, 20, 24, 36,\\
+    50, 59, 68, 71, 76
+  \end{tabular} & 15 (7) & 55{,}44 \\
+\hline
+SMS & Radial & 0{,}001 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{7},
+    \textbf{8}, 11, 20, 36, 50,\\
+    59, 60, 65, 76, 92
+  \end{tabular} & 15 (6) & 52{,}49 \\
+\hline
+SMS & Radial & 0{,}01 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{7},
+    \textbf{8}, 36, 65, 68, 76, 92
+  \end{tabular} & 11 (6) & 57{,}90 \\
+\hline
+SMS & Radial & 0{,}1 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{4}, \textbf{5}, \textbf{7},
+    \textbf{8}, 11, 24
+  \end{tabular} & 8 (6) & 65{,}49 \\
+\hline
+SMS & Radial & 1{,}0 &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{7}, \textbf{8}, 59
+  \end{tabular} & 5 (4) & 58{,}01 \\
+\hline
+União & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{7}, \textbf{8}, 11, 20, 24,\\
+    36, 50, 59, 60, 65, 68, 71, 76, 92
+  \end{tabular} & 19 (7) & -- \\
+\hline
+Interseção & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{7}, \textbf{8}
+  \end{tabular} & 4 (4) & -- \\
+\hline
+Valor-$p$ bruto & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{3}, \textbf{4}, \textbf{5},
+    \textbf{7}, \textbf{8}, 27, 28, 42, 89
+  \end{tabular} & 11 (7) & -- \\
+\hline
+Valor-$p$ corrigido & -- & -- &
+  \begin{tabular}[c]{@{}c@{}}
+    \textbf{1}, \textbf{2}, \textbf{4}, \textbf{7}, \textbf{8}
+  \end{tabular} & 5 (5) & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent
+\textbf{Legenda:} Os números em negrito correspondem aos \emph{SNPs} causais conhecidos
+(\emph{SNPs} 1 a 8). A coluna \# \emph{SNPs} (V) indica o total de \emph{SNPs}
+selecionados e, entre parênteses, a quantidade de \emph{SNPs} causais corretamente
+identificados. A coluna de métrica (acurácia ou F1) refere-se ao valor de aptidão
+(\emph{fitness}) obtido pelo Algoritmo Genético com validação cruzada estratificada
+de 10 \emph{folds}. As linhas de Valor-$p$ utilizam limiar $\alpha = 0{,}05$
+com correção de Bonferroni para os valores ajustados.
+
+\end{document}

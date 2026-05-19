@@ -1,0 +1,21 @@
+===== Seleções por Kernel (GA, Classificação) =====
+SMS Linear =  SNP3, SNP2, SNP1, SNP8, SNP14 
+SMS Radial 0.001 =  SNP3, SNP2, SNP5, SNP1, SNP8, SNP25, SNP92, SNP87, SNP14, SNP61 
+SMS Radial 0.01 =  SNP3, SNP2, SNP5, SNP1, SNP4, SNP8, SNP36, SNP6, SNP28, SNP11, SNP88 
+SMS Radial 0.1 =  SNP3, SNP2, SNP5, SNP1, SNP4, SNP7, SNP8, SNP25, SNP36, SNP87, SNP14, SNP60, SNP21 
+SMS Radial 1 =  SNP3, SNP1, SNP4, SNP87, SNP6 
+
+===== União / Interseção =====
+União =  SNP3, SNP2, SNP1, SNP8, SNP14, SNP5, SNP25, SNP92, SNP87, SNP61, SNP4, SNP36, SNP6, SNP28, SNP11, SNP88, SNP7, SNP60, SNP21 
+Interseção =  SNP3, SNP1 
+
+===== Seleção por Valor-p (binário) =====
+Valor-p bruto (<= 0.05) =  SNP1, SNP2, SNP3, SNP4, SNP5, SNP8, SNP49, SNP62, SNP77, SNP83, SNP88, SNP89 
+Valor-p ajustado (<= 0.05) =  SNP1, SNP2, SNP3, SNP4, SNP5, SNP8 
+
+===== Medidas de Otimalidade (SNPs causais, Classificação) =====
+Linear  ->  ACC = 0.7290  | PREC = 0.4113  | REC  = 0.7700  | F1   = 0.5344 
+Radial_0.001  ->  ACC = 0.7300  | PREC = 0.4169  | REC  = 0.8000  | F1   = 0.5461 
+Radial_0.01  ->  ACC = 0.7540  | PREC = 0.4406  | REC  = 0.8100  | F1   = 0.5696 
+Radial_0.1  ->  ACC = 0.8290  | PREC = 0.5555  | REC  = 0.7900  | F1   = 0.6483 
+Radial_1  ->  ACC = 0.8190  | PREC = 0.5688  | REC  = 0.3900  | F1   = 0.4574 

@@ -1,0 +1,21 @@
+===== Seleções por Kernel (GA, Classificação) =====
+SMS Linear =  SNP5, SNP2, SNP8, SNP7, SNP1, SNP4, SNP3, SNP36, SNP59, SNP50, SNP68, SNP43, SNP76, SNP24, SNP20, SNP71, SNP65, SNP11, SNP92, SNP60, SNP87, SNP56, SNP72, SNP31, SNP44, SNP53, SNP25, SNP69, SNP49, SNP94, SNP6, SNP52 
+SMS Radial 0.001 =  SNP5, SNP3, SNP36, SNP59, SNP50, SNP43, SNP76, SNP24, SNP65, SNP92, SNP60 
+SMS Radial 0.01 =  SNP5, SNP1, SNP4, SNP3, SNP50, SNP43, SNP20, SNP65, SNP11, SNP92, SNP60 
+SMS Radial 0.1 =  SNP5, SNP2, SNP8, SNP7, SNP1, SNP4, SNP50, SNP24, SNP20 
+SMS Radial 1 =  SNP5, SNP2, SNP8, SNP7, SNP1, SNP4, SNP3, SNP36, SNP92 
+
+===== União / Interseção =====
+União =  SNP5, SNP2, SNP8, SNP7, SNP1, SNP4, SNP3, SNP36, SNP59, SNP50, SNP68, SNP43, SNP76, SNP24, SNP20, SNP71, SNP65, SNP11, SNP92, SNP60, SNP87, SNP56, SNP72, SNP31, SNP44, SNP53, SNP25, SNP69, SNP49, SNP94, SNP6, SNP52 
+Interseção =  SNP5 
+
+===== Seleção por Valor-p (binário) =====
+Valor-p bruto (<= 0.05) =  SNP1, SNP2, SNP3, SNP4, SNP5, SNP7, SNP8, SNP27, SNP28, SNP42, SNP89 
+Valor-p ajustado (<= 0.05) =  SNP1, SNP2, SNP4, SNP7, SNP8 
+
+===== Medidas de Otimalidade (SNPs causais, Classificação) =====
+Linear  ->  ACC = 0.7970  | PREC = 0.0000  | REC  = 0.0000  | F1   = 0.0000 
+Radial_0.001  ->  ACC = 0.8000  | PREC = 0.0000  | REC  = 0.0000  | F1   = 0.0000 
+Radial_0.01  ->  ACC = 0.8000  | PREC = 0.0000  | REC  = 0.0000  | F1   = 0.0000 
+Radial_0.1  ->  ACC = 0.8890  | PREC = 0.8549  | REC  = 0.5350  | F1   = 0.6468 
+Radial_1  ->  ACC = 0.8580  | PREC = 0.7806  | REC  = 0.4150  | F1   = 0.5389 

@@ -1,0 +1,750 @@
+% ===========================================================================
+%  APÊNDICES — Gráficos de Corte do SVM e Evolução do GA
+%  TCC – Izabela
+%  Estrutura: um capítulo por cenário experimental (10 cenários)
+%  Cada capítulo contém:
+%    • Seção 1 — Gráficos de Corte do SVM (Acurácia ou F1)
+%    • Seção 2 — Gráficos de Evolução do GA
+%  Cenários com SMOTE-NC possuem seções adicionais para o critério F1.
+% ===========================================================================
+
+\appendix
+\begin{appendices}
+
+% ========================================================================
+%  CENÁRIO 1 — Acurácia 1 | Base Balanceada (50%/50%) | Validação Balanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 1: Acurácia 1 --- Base Balanceada,
+         Validação Balanceada}
+
+\section{Cenário 1 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+Os gráficos a seguir apresentam a acurácia do SVM ao longo das iterações da
+etapa de corte, na qual o SNP de menor \emph{rank} dado pela Floresta Aleatória
+é removido a cada passo.
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 1 --- Corte do SVM: Acurácia 1, Base Balanceada, Validação
+             Balanceada.}
+    \label{fig:corte_c1}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 1 --- Gráficos de Evolução do GA}
+
+Os gráficos a seguir apresentam a evolução do \emph{fitness} (acurácia) ao longo
+das gerações do Algoritmo Genético.
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 1 --- Evolução do GA: Acurácia 1, Base Balanceada,
+             Validação Balanceada.}
+    \label{fig:ga_c1}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 2 — Acurácia 1 | Base Balanceada (50%/50%) | Validação Desbalanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 2: Acurácia 1 --- Base Balanceada,
+         Validação Desbalanceada}
+
+\section{Cenário 2 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 2 --- Corte do SVM: Acurácia 1, Base Balanceada, Validação
+             Desbalanceada.}
+    \label{fig:corte_c2}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 2 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 2 --- Evolução do GA: Acurácia 1, Base Balanceada,
+             Validação Desbalanceada.}
+    \label{fig:ga_c2}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 3 — Acurácia 1 | Base Desbalanceada (80%/20%) | Validação Balanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 3: Acurácia 1 --- Base Desbalanceada,
+         Validação Balanceada}
+
+\section{Cenário 3 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 3 --- Corte do SVM: Acurácia 1, Base Desbalanceada
+             (80\%/20\%), Validação Balanceada.}
+    \label{fig:corte_c3}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 3 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 3 --- Evolução do GA: Acurácia 1, Base Desbalanceada,
+             Validação Balanceada.}
+    \label{fig:ga_c3}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 4 — Acurácia 1 | Base Desbalanceada | Validação Desbalanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 4: Acurácia 1 --- Base Desbalanceada,
+         Validação Desbalanceada}
+
+\section{Cenário 4 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 4 --- Corte do SVM: Acurácia 1, Base Desbalanceada,
+             Validação Desbalanceada.}
+    \label{fig:corte_c4}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 4 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 4 --- Evolução do GA: Acurácia 1, Base Desbalanceada,
+             Validação Desbalanceada.}
+    \label{fig:ga_c4}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 5 — Acurácia 1 | Base Desbalanceada | CV Estratificada + SMOTE-NC
+%  (possui gráficos com Acurácia E F1 Score como critério de otimização do GA)
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 5: Acurácia 1 --- Base Desbalanceada,
+         CV Estratificada com SMOTE-NC}
+
+\section{Cenário 5 --- Gráficos de Corte do SVM (Critério: Acurácia)}
+
+Os gráficos a seguir correspondem ao corte usando a acurácia como métrica de
+avaliação durante a etapa de filtragem.
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 5 --- Corte do SVM (Acurácia): Base Desbalanceada, CV
+             Estratificada com SMOTE-NC.}
+    \label{fig:corte_c5_acc}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 5 --- Gráficos de Corte do SVM (Critério: F1 Score)}
+
+Os gráficos a seguir correspondem ao corte usando o F1 Score como métrica.
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_1.pdf}}
+    \caption{Cenário 5 --- Corte do SVM (F1 Score): Base Desbalanceada, CV
+             Estratificada com SMOTE-NC.}
+    \label{fig:corte_c5_f1}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 5 --- Gráficos de Evolução do GA (Critério: Acurácia)}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 5 --- Evolução do GA (Acurácia): Base Desbalanceada,
+             CV Estratificada com SMOTE-NC.}
+    \label{fig:ga_c5_acc}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 5 --- Gráficos de Evolução do GA (Critério: F1 Score)}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_linear_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_0001_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_001_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_01_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_1_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_1_F1.pdf}}
+    \caption{Cenário 5 --- Evolução do GA (F1 Score): Base Desbalanceada,
+             CV Estratificada com SMOTE-NC.}
+    \label{fig:ga_c5_f1}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 6 — Acurácia 2 | Base Balanceada (50%/50%) | Validação Balanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 6: Acurácia 2 --- Base Balanceada,
+         Validação Balanceada}
+
+\section{Cenário 6 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 6 --- Corte do SVM: Acurácia 2, Base Balanceada,
+             Validação Balanceada.}
+    \label{fig:corte_c6}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 6 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Balanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 6 --- Evolução do GA: Acurácia 2, Base Balanceada,
+             Validação Balanceada.}
+    \label{fig:ga_c6}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 7 — Acurácia 2 | Base Balanceada | Validação Desbalanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 7: Acurácia 2 --- Base Balanceada,
+         Validação Desbalanceada}
+
+\section{Cenário 7 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 7 --- Corte do SVM: Acurácia 2, Base Balanceada,
+             Validação Desbalanceada.}
+    \label{fig:corte_c7}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 7 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Balanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 7 --- Evolução do GA: Acurácia 2, Base Balanceada,
+             Validação Desbalanceada.}
+    \label{fig:ga_c7}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 8 — Acurácia 2 | Base Desbalanceada | Validação Desbalanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 8: Acurácia 2 --- Base Desbalanceada,
+         Validação Desbalanceada}
+
+\section{Cenário 8 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 8 --- Corte do SVM: Acurácia 2, Base Desbalanceada,
+             Validação Desbalanceada.}
+    \label{fig:corte_c8}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 8 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Base_Desbalanceada_Validacao_Desbalanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 8 --- Evolução do GA: Acurácia 2, Base Desbalanceada,
+             Validação Desbalanceada.}
+    \label{fig:ga_c8}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 9 — Acurácia 2 | Base Desbalanceada | CV Estratificada + SMOTE-NC
+%  (possui gráficos com Acurácia E F1 Score como critério de otimização do GA)
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 9: Acurácia 2 --- Base Desbalanceada,
+         CV Estratificada com SMOTE-NC}
+
+\section{Cenário 9 --- Gráficos de Corte do SVM (Critério: Acurácia)}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 9 --- Corte do SVM (Acurácia): Base Desbalanceada,
+             CV Estratificada com SMOTE-NC.}
+    \label{fig:corte_c9_acc}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 9 --- Gráficos de Corte do SVM (Critério: F1 Score)}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_F1_SVM_radial_1.pdf}}
+    \caption{Cenário 9 --- Corte do SVM (F1 Score): Base Desbalanceada,
+             CV Estratificada com SMOTE-NC.}
+    \label{fig:corte_c9_f1}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 9 --- Gráficos de Evolução do GA (Critério: Acurácia)}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 9 --- Evolução do GA (Acurácia): Base Desbalanceada,
+             CV Estratificada com SMOTE-NC.}
+    \label{fig:ga_c9_acc}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 9 --- Gráficos de Evolução do GA (Critério: F1 Score)}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_linear_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_0001_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_001_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_01_F1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_CV_estrat_SMOTE/Grafico_GA_SVM_radial_1_F1.pdf}}
+    \caption{Cenário 9 --- Evolução do GA (F1 Score): Base Desbalanceada,
+             CV Estratificada com SMOTE-NC.}
+    \label{fig:ga_c9_f1}
+\end{figure}
+
+\clearpage
+
+% ========================================================================
+%  CENÁRIO 10 — Acurácia 2 | Base Desbalanceada | Validação Balanceada
+% ========================================================================
+\chapter{APÊNDICE --- CENÁRIO 10: Acurácia 2 --- Base Desbalanceada,
+         Validação Balanceada}
+
+\section{Cenário 10 --- Gráficos de Corte do SVM sobre o \emph{Rank} da RF}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_0001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_ACCURACY_SVM_radial_1.pdf}}
+    \caption{Cenário 10 --- Corte do SVM: Acurácia 2, Base Desbalanceada,
+             Validação Balanceada.}
+    \label{fig:corte_c10}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 10 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_linear_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_0001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_001_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_01_ACC.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Completo_Acuracia_2_Desbalanceada_Validacao_Balanceada/Grafico_GA_SVM_radial_1_ACC.pdf}}
+    \caption{Cenário 10 --- Evolução do GA: Acurácia 2, Base Desbalanceada,
+             Validação Balanceada.}
+    \label{fig:ga_c10}
+\end{figure}
+
+\clearpage
+
+% =============================================================
+\chapter{APÊNDICE --- CENÁRIO 11: Simulação 6 de Oliveira (2015) ---
+         Base Desbalanceada (86\%/14\%), SMOTE-NC + CV Estratificada + F1 Minoria}
+% =============================================================
+
+\section{Cenário 11 --- Gráficos de Corte do SVM (Critério: F1-Score da Classe Minoritária)}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Corte com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_F1_minoria_SVM_Linear.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_F1_minoria_SVM_Radial_0.001.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_F1_minoria_SVM_Radial_0.01.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_F1_minoria_SVM_Radial_0.1.pdf}}
+    \hfill
+    \subfloat[Corte com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_F1_minoria_SVM_Radial_1.pdf}}
+    \caption{Cenário 11 --- Corte do SVM: Simulação 6 de Oliveira (2015),
+             Base Desbalanceada com SMOTE-NC, CV Estratificada e F1-Score da Classe
+             Minoritária (Controles) como critério de corte.
+             O eixo $x$ indica o número de SNPs do \textit{rank} da RF utilizados;
+             o eixo $y$ indica o F1-Score médio da classe minoritária na validação cruzada.
+             O ponto de corte ótimo (20 SNPs) é marcado pela linha vertical tracejada.}
+    \label{fig:corte_c11}
+\end{figure}
+
+\clearpage
+
+\section{Cenário 11 --- Gráficos de Evolução do GA}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[GA com \emph{kernel} Linear.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_GA_F1_Linear.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}001$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_GA_F1_Radial_0.001.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}01$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_GA_F1_Radial_0.01.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 0{,}1$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_GA_F1_Radial_0.1.pdf}}
+    \hfill
+    \subfloat[GA com \emph{kernel} Radial, $\gamma = 1{,}0$.]
+        {\includegraphics[width=0.48\textwidth]{SMS_Oliveira2015_Sim6_Desbal_SMOTE_F1/Grafico_GA_F1_Radial_1.pdf}}
+    \caption{Cenário 11 --- Evolução do GA: Simulação 6 de Oliveira (2015),
+             com 20 SNPs pré-selecionados pelo corte.
+             O eixo $x$ indica a geração do GA; o eixo $y$ indica o F1-Score
+             da classe minoritária do melhor indivíduo. A convergência indica
+             o subconjunto ótimo de SNPs selecionado pelo GA.}
+    \label{fig:ga_c11}
+\end{figure}
+
+\clearpage
+
+\end{appendices}
