@@ -45,6 +45,7 @@
   }
 }, error = function(e) getwd())
 setwd(.script_dir)
+pasta_saida <- .script_dir
 cat("[setwd] pasta de trabalho:", getwd(), "\n")
 
 # --- Pacotes ------------------------------------------------------------------
